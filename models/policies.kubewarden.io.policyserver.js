@@ -31,7 +31,7 @@ export default class PolicyServer extends SteveModel {
     const pods = await this.$dispatch('cluster/findAll', { type: POD }, { root: true });
 
     if ( pods ) {
-      const policyPod = pods.find(p => p.spec?.serviceAccountName === this.spec?.serviceAccountName);
+      const policyPod = pods.find(p => p.metadata?.labels?.app === `kubewarden-policy-server-${ this.metadata.name }`);
 
       if ( policyPod ) {
         this.$dispatch('wm/open', {
