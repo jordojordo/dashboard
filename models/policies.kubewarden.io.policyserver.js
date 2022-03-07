@@ -28,24 +28,23 @@ export default class PolicyServer extends SteveModel {
   }
 
   async openLogs() {
-    const pods = await this.$dispatch('cluster/findAll', { type: POD }, { root: true });
+    try {
+      const pod = await this.$dispatch('cluster/findMatching', {
+        type:     POD,
+        selector: `app=kubewarden-policy-server-${ this.metadata?.name }`
+      }, { root: true });
 
-    if ( pods ) {
-      const policyPod = pods.find(p => p.metadata?.labels?.app === `kubewarden-policy-server-${ this.metadata.name }`);
-
-      if ( policyPod ) {
+      if ( pod ) {
         this.$dispatch('wm/open', {
           id:        `${ this.id }-logs`,
           label:     this.nameDisplay,
           icon:      'file',
           component: 'ContainerLogs',
-          attrs:     { pod: policyPod }
+          attrs:     { pod: pod[0] }
         }, { root: true });
-      } else {
-        console.error(`Error dispatching console for pod: ${ policyPod }`); // eslint-disable-line no-console
       }
-    } else {
-      console.error('Error fetching pods'); // eslint-disable-line no-console
+    } catch (e) {
+      console.error('Error dispatching console for pod', e); // eslint-disable-line no-console
     }
   }
 }
