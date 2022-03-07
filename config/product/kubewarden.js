@@ -106,6 +106,11 @@ export function init(store) {
     STATE,
     NAME_HEADER,
     {
+      name:  'capPolicyServer',
+      label: 'Policy Server',
+      value: 'spec.policyServer'
+    },
+    {
       name:          'kubewardenClusterAdmissionPolicies',
       label:         'Module',
       value:         'spec.module',
@@ -116,11 +121,6 @@ export function init(store) {
           params: { resource: CLUSTER_ADMISSION_POLICY }
         }
       },
-    },
-    {
-      name:      'capPolicyStatus',
-      label:     'Policy Status',
-      value:     'status.policyStatus',
     },
     {
       name:      'capCreated',
