@@ -7,7 +7,6 @@
     {
       "default": "",
       "depth": 1,
-      "description": "Policy metadata",
       "group": "Metadata",
       "label": "Policy name",
       "show_subquestion_if": false,
@@ -25,24 +24,13 @@
       "variable": "policy.name"
     },
     {
-      "default": [],
+      "default": "",
       "depth": 2,
-      "description": "Other question",
       "group": "Metadata",
-      "label": "Other one",
+      "label": "Namespace",
       "show_subquestion_if": false,
-      "subquestions": [
-        {
-          "default": true,
-          "description": "Other example",
-          "group": "Other subquestion examples",
-          "label": "Other subquestion",
-          "type": "boolean",
-          "variable": "policy.other.subquestion"
-        }
-      ],
-      "type": "array",
-      "variable": "policy.other"
+      "type": "string",
+      "variable": "policy.namespace"
     }
   ]
 }

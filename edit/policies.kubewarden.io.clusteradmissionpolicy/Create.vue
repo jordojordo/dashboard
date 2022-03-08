@@ -5,7 +5,7 @@ import { mapGetters } from 'vuex';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
 import {
-  CATEGORY, _CREATE, _VIEW, CHART, REPO, REPO_TYPE, SEARCH_QUERY, VERSION
+  CATEGORY, _CREATE, _VIEW, CHART, REPO, REPO_TYPE, SEARCH_QUERY
 } from '@/config/query-params';
 import { KUBEWARDEN } from '@/config/types';
 import { saferDump } from '@/utils/create-yaml';
@@ -22,7 +22,7 @@ import Wizard from '@/components/Wizard';
 import YamlEditor, { EDITOR_MODES } from '@/components/YamlEditor';
 
 import defaultPolicy from '@/.questions/defaultPolicy.json';
-import questionJson from '@/.questions/questions.json';
+import questionsJson from '@/.questions/questions.json';
 
 const VALUES_STATE = {
   FORM: 'FORM',
@@ -30,12 +30,18 @@ const VALUES_STATE = {
 };
 
 const DEFAULT_STATE = {
-  chartValues:         null,
+  chartValues:         {
+    readme:      '# kubewarden readme example',
+    appReadme:   '# kubewarden appReadme example',
+    chart:       {},
+    questions:   questionsJson,
+    values:      {}
+  },
   type:                null,
   originalYamlValues:  null,
   previousYamlValues:  null,
-  valuesYaml:          null,
-  preYamlOption:      VALUES_STATE.YAML,
+  yamlValues:          null,
+  preYamlOption:      VALUES_STATE.FORM,
   yamlOption:         VALUES_STATE.YAML,
 };
 
@@ -60,10 +66,6 @@ export default ({
   mixins: [ChartMixin, CreateEditView],
 
   fetch() {
-    // await this.fetchChart(); // Use this when we get helm-charts for policies
-
-    const query = this.$route.query;
-
     this.errors = [];
 
     try {
@@ -77,18 +79,16 @@ export default ({
       this.errors.push(e);
     }
 
-    if ( this.type ) {
-      this.chartValues = {
-        readme:      '# kubewarden readme example',
-        appReadme:   '# kubewarden appReadme example',
-        chart:       {},
-        questions:   questionJson,
-        values:      {}
-      };
-    }
+    this.chartValues = {
+      readme:      '# kubewarden readme example',
+      appReadme:   '# kubewarden appReadme example',
+      chart:       {},
+      questions:   questionsJson,
+      values:      {}
+    };
+    this.yamlValues = saferDump(defaultPolicy);
 
-    this.chartValues = merge(merge({}, this.versionInfo?.values || {}), defaultPolicy);
-    this.valuesYaml = saferDump(this.chartValues);
+    const query = this.$route.query;
 
     this.searchQuery = query[SEARCH_QUERY] || '';
     this.category = query[CATEGORY] || '';
@@ -105,10 +105,10 @@ export default ({
       version:             null,
 
       chartValues:         null,
-      valuesYaml:          null,
+      yamlValues:          null,
       originalYamlValues:  null,
       previousYamlValues:  null,
-      preYamlOption:       VALUES_STATE.YAML,
+      preYamlOption:       VALUES_STATE.FORM,
       yamlOption:          VALUES_STATE.YAML,
       showQuestions:       this.isSelected,
 
@@ -154,7 +154,7 @@ export default ({
           value:    VALUES_STATE.FORM,
         },
         {
-          labelKey: 'catalog.install.section.valuesYaml',
+          labelKey: 'catalog.install.section.yamlValues',
           value:    VALUES_STATE.YAML,
         }
       ]
@@ -162,27 +162,13 @@ export default ({
   },
 
   watch: {
-    category(option) {
-      this.$router.applyQuery({ [CATEGORY]: option || undefined });
-    },
-
-    searchQuery(query) {
-      this.$router.applyQuery({ [SEARCH_QUERY]: query || undefined });
-    },
-
     yamlOption(neu, old) {
       switch (neu) {
       case VALUES_STATE.FORM:
-        // Return to form, reset everything back to starting point
         this.showQuestions = true;
 
         break;
       case VALUES_STATE.YAML:
-        // Show the YAML preview
-        if ( old === VALUES_STATE.FORM ) {
-          this.valuesYaml = saferDump(this.chartValues || {});
-        }
-
         this.showQuestions = false;
 
         break;
@@ -246,10 +232,6 @@ export default ({
       return [...new Set(flattened)];
     },
 
-    showingYaml() {
-      return this.yamlOption === VALUES_STATE.YAML;
-    },
-
     steps() {
       const steps = [];
 
@@ -304,10 +286,9 @@ export default ({
 
       this.$router.push({
         query: {
-          [REPO]:      'kubewarden',
-          [REPO_TYPE]: 'cluster',
+          [REPO]:      'kubewarden', // =<<=================== CHANGE THIS
+          [REPO_TYPE]: 'cluster', // =<<============= AND THIS TOO
           [CHART]:     type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, ''),
-          [VERSION]:   'v0.1.4'
         }
       });
 
@@ -344,7 +325,7 @@ export default ({
 
     async finish() {
       try {
-        const out = jsyaml.load(this.valuesYaml);
+        const out = jsyaml.load(this.yamlValues);
 
         merge(this.value, out);
 
@@ -356,8 +337,10 @@ export default ({
     },
 
     next() {
-      if ( !!this.type && !this.returned ) {
+      if ( !this.isSelected && !this.returned ) {
         this.yamlOption = VALUES_STATE.YAML;
+      } else {
+        this.yamlOption = VALUES_STATE.FORM;
       }
     },
 
@@ -471,11 +454,10 @@ export default ({
       <template #helmValues>
         <div class="step__values__controls">
           <ButtonGroup
-            v-model="preYamlOption"
+            v-model="yamlOption"
             :options="yamlOptions"
             inactive-class="bg-disabled btn-sm"
             active-class="bg-primary btn-sm"
-            :disabled="preYamlOption != yamlOption"
           ></ButtonGroup>
         </div>
         <div class="scroll__container">
@@ -500,7 +482,7 @@ export default ({
             <template v-else>
               <YamlEditor
                 ref="yaml"
-                v-model="valuesYaml"
+                v-model="yamlValues"
                 class="step__values__content"
                 :scrolling="true"
                 :initial-yaml-values="originalYamlValues"

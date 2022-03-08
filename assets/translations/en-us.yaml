@@ -775,7 +775,7 @@ catalog:
     project: Install into Project
     section:
       chartOptions: Edit Options
-      valuesYaml: Edit YAML
+      yamlValues: Edit YAML
       diff: Compare Changes
     slideIn:
       dock: Dock to bottom
