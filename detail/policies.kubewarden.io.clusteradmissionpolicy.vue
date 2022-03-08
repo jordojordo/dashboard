@@ -123,7 +123,8 @@ export default {
     tracesRows() {
       const out = this.traces?.data?.map((trace) => {
         const span = trace.spans.find(s => s.operationName === 'validation');
-        const date = new Date(span.startTime).toUTCString();
+
+        const date = new Date(span.startTime);
 
         span.startTime = date;
 

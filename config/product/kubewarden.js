@@ -16,6 +16,7 @@ export function init(store) {
 
   const {
     POLICY_SERVER,
+    ADMISSION_POLICY,
     CLUSTER_ADMISSION_POLICY,
     SPOOFED
   } = KUBEWARDEN;
@@ -28,6 +29,7 @@ export function init(store) {
 
   basicType([
     POLICY_SERVER,
+    ADMISSION_POLICY,
     CLUSTER_ADMISSION_POLICY,
   ]);
 
@@ -96,6 +98,34 @@ export function init(store) {
     },
     {
       name:      'psCreated',
+      label:     'Created',
+      value:     'metadata.creationTimestamp',
+      formatter: 'LiveDate'
+    }
+  ]);
+
+  headers(ADMISSION_POLICY, [
+    STATE,
+    NAME_HEADER,
+    {
+      name:  'capPolicyServer',
+      label: 'Policy Server',
+      value: 'spec.policyServer'
+    },
+    {
+      name:          'kubewardenAdmissionPolicies',
+      label:         'Module',
+      value:         'spec.module',
+      formatterOpts: {
+        options: { internal: true },
+        to:      {
+          name:   'c-cluster-product-resource-id',
+          params: { resource: ADMISSION_POLICY }
+        }
+      },
+    },
+    {
+      name:      'capCreated',
       label:     'Created',
       value:     'metadata.creationTimestamp',
       formatter: 'LiveDate'

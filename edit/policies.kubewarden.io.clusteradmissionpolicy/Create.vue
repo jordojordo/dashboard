@@ -302,13 +302,11 @@ export default ({
     selectType(type) {
       this.type = type;
 
-      const chartType = type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '');
-
       this.$router.push({
         query: {
           [REPO]:      'kubewarden',
           [REPO_TYPE]: 'cluster',
-          [CHART]:     chartType,
+          [CHART]:     type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, ''),
           [VERSION]:   'v0.1.4'
         }
       });

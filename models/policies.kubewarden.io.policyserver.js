@@ -31,7 +31,7 @@ export default class PolicyServer extends SteveModel {
     try {
       const pod = await this.$dispatch('cluster/findMatching', {
         type:     POD,
-        selector: `app=kubewarden-policy-server-${ this.metadata?.name }`
+        selector: `app=kubewarden-policy-server-${ this.metadata?.name }` // kubewarden-policy-server is hardcoded from the kubewarden-controller
       }, { root: true });
 
       if ( pod ) {
