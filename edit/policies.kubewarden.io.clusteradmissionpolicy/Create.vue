@@ -40,7 +40,7 @@ const DEFAULT_STATE = {
   type:                null,
   originalYamlValues:  null,
   previousYamlValues:  null,
-  yamlValues:          null,
+  yamlValues:          saferDump(defaultPolicy),
   preYamlOption:      VALUES_STATE.FORM,
   yamlOption:         VALUES_STATE.YAML,
 };
@@ -79,6 +79,7 @@ export default ({
       this.errors.push(e);
     }
 
+    // This object will need to be refactored when helm charts exist for policies
     this.chartValues = {
       readme:      '# kubewarden readme example',
       appReadme:   '# kubewarden appReadme example',
@@ -87,6 +88,8 @@ export default ({
       values:      {}
     };
     this.yamlValues = saferDump(defaultPolicy);
+    this.value.apiVersion = 'policies.kubewarden.io/v1alpha2';
+    this.value.kind = 'ClusterAdmissionPolicy';
 
     const query = this.$route.query;
 
@@ -99,7 +102,6 @@ export default ({
       errors:              null,
       category:            null,
       keywords:            [],
-      returned:            false,
       searchQuery:         null,
       type:                null,
       version:             null,
@@ -154,7 +156,7 @@ export default ({
           value:    VALUES_STATE.FORM,
         },
         {
-          labelKey: 'catalog.install.section.yamlValues',
+          labelKey: 'catalog.install.section.valuesYaml',
           value:    VALUES_STATE.YAML,
         }
       ]
@@ -300,8 +302,6 @@ export default ({
     },
 
     back() {
-      this.returned = true;
-
       // Reset the values of the state
       for ( const [key, value] of Object.entries(DEFAULT_STATE) ) {
         this[key] = value;
@@ -325,7 +325,17 @@ export default ({
 
     async finish() {
       try {
-        const out = jsyaml.load(this.yamlValues);
+        if ( this.chartValues?.policy ) {
+          const r = {};
+
+          for ( const [key, value] of Object.entries(this.chartValues.policy?.spec?.rules) ) {
+            Object.assign(r, { [key]: value.split(' ') });
+          }
+
+          this.chartValues.policy.spec.rules = [r];
+        }
+
+        const out = this.chartValues?.policy ? this.chartValues.policy : jsyaml.load(this.yamlValues);
 
         merge(this.value, out);
 
@@ -337,7 +347,7 @@ export default ({
     },
 
     next() {
-      if ( !this.isSelected && !this.returned ) {
+      if ( !this.isSelected ) {
         this.yamlOption = VALUES_STATE.YAML;
       } else {
         this.yamlOption = VALUES_STATE.FORM;
@@ -347,7 +357,7 @@ export default ({
     refresh() {
       this.category = null;
       this.keywords = [];
-    },
+    }
   }
 
 });
