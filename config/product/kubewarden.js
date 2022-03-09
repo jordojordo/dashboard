@@ -5,6 +5,15 @@ import { STATE, NAME as NAME_HEADER } from '@/config/table-headers';
 export const NAME = 'kubewarden';
 export const CHART_NAME = 'rancher-kubewarden';
 
+export const ADMISSION_POLICY_STATE = {
+  name:      'policyStatus',
+  sort:      ['stateSort', 'nameSort'],
+  value:     'status.policyStatus',
+  label:     'Status',
+  width:     100,
+  formatter: 'PolicyStatus',
+};
+
 export function init(store) {
   const {
     product,
@@ -133,7 +142,7 @@ export function init(store) {
   ]);
 
   headers(CLUSTER_ADMISSION_POLICY, [
-    STATE,
+    ADMISSION_POLICY_STATE,
     NAME_HEADER,
     {
       name:  'capPolicyServer',

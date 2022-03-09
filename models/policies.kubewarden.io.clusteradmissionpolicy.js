@@ -13,6 +13,18 @@ export default class ClusterAdmissionPolicy extends SteveModel {
     };
   }
 
+  get detailPageHeaderBadgeOverride() {
+    return this.status?.policyStatus;
+  }
+
+  get componentForBadge() {
+    if ( this.detailPageHeaderBadgeOverride ) {
+      return require(`@/components/formatter/PolicyStatus.vue`).default;
+    }
+
+    return null;
+  }
+
   get link() {
     if ( this.spec?.toURL ) {
       return this.spec.toURL;
