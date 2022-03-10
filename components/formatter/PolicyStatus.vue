@@ -8,11 +8,7 @@ export default {
     value: {
       type:     String,
       default: ''
-    },
-    row: {
-      type:     Object,
-      required: true
-    },
+    }
   },
 
   data() {

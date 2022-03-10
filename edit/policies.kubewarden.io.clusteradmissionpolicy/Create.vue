@@ -1,6 +1,7 @@
 <script>
 import jsyaml from 'js-yaml';
 import merge from 'lodash/merge';
+import cloneDeep from 'lodash/cloneDeep';
 import { mapGetters } from 'vuex';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
@@ -10,7 +11,7 @@ import {
 import { KUBEWARDEN } from '@/config/types';
 import { saferDump } from '@/utils/create-yaml';
 import { ensureRegex } from '@/utils/string';
-import { sortBy } from '@/utils/sort';
+import { sortBy, typeOf } from '@/utils/sort';
 
 import ButtonGroup from '@/components/ButtonGroup';
 import LabeledSelect from '@/components/form/LabeledSelect';
@@ -22,27 +23,11 @@ import Wizard from '@/components/Wizard';
 import YamlEditor, { EDITOR_MODES } from '@/components/YamlEditor';
 
 import defaultPolicy from '@/.questions/defaultPolicy.json';
-import questionsJson from '@/.questions/questions.json';
+// import questionsJson from '@/.questions/questions.json';
 
 const VALUES_STATE = {
   FORM: 'FORM',
   YAML: 'YAML',
-};
-
-const DEFAULT_STATE = {
-  chartValues:         {
-    readme:      '# kubewarden readme example',
-    appReadme:   '# kubewarden appReadme example',
-    chart:       {},
-    questions:   questionsJson,
-    values:      {}
-  },
-  type:                null,
-  originalYamlValues:  null,
-  previousYamlValues:  null,
-  yamlValues:          saferDump(defaultPolicy),
-  preYamlOption:      VALUES_STATE.FORM,
-  yamlOption:         VALUES_STATE.YAML,
 };
 
 export default ({
@@ -65,7 +50,26 @@ export default ({
 
   mixins: [ChartMixin, CreateEditView],
 
-  fetch() {
+  async fetch() {
+    try {
+      // Without importing this here the object would maintain the state
+      // We've got some weirdness going on here...
+      this.questions = await import(/* webpackChunkName: "questions-data" */ '@/.questions/questions.json');
+
+      const _questions = cloneDeep(JSON.parse(JSON.stringify(this.questions)));
+
+      // This object will need to be refactored when helm charts exist for policies
+      this.chartValues = {
+        readme:      '# kubewarden readme example',
+        appReadme:   '# kubewarden appReadme example',
+        chart:       {},
+        questions:   _questions,
+        values:      {}
+      };
+    } catch (e) {
+      console.error(`Error importing questions ${ e }`); // eslint-disable-line no-console
+    }
+
     this.errors = [];
 
     try {
@@ -79,14 +83,6 @@ export default ({
       this.errors.push(e);
     }
 
-    // This object will need to be refactored when helm charts exist for policies
-    this.chartValues = {
-      readme:      '# kubewarden readme example',
-      appReadme:   '# kubewarden appReadme example',
-      chart:       {},
-      questions:   questionsJson,
-      values:      {}
-    };
     this.yamlValues = saferDump(defaultPolicy);
     this.value.apiVersion = 'policies.kubewarden.io/v1alpha2';
     this.value.kind = 'ClusterAdmissionPolicy';
@@ -99,6 +95,7 @@ export default ({
 
   data() {
     return {
+      questions:           null,
       errors:              null,
       category:            null,
       keywords:            [],
@@ -294,6 +291,7 @@ export default ({
         }
       });
 
+      this.policyQuestions();
       this.$refs.wizard.next();
     },
 
@@ -302,10 +300,7 @@ export default ({
     },
 
     back() {
-      // Reset the values of the state
-      for ( const [key, value] of Object.entries(DEFAULT_STATE) ) {
-        this[key] = value;
-      }
+      // this.reset();
     },
 
     cancel() {
@@ -357,6 +352,51 @@ export default ({
     refresh() {
       this.category = null;
       this.keywords = [];
+    },
+
+    // reset() {
+    //   const out = {
+    //     chartValues:         {
+    //       readme:      '# kubewarden readme example',
+    //       appReadme:   '# kubewarden appReadme example',
+    //       chart:       {},
+    //       questions:   questionsJson,
+    //       values:      {}
+    //     },
+    //     type:                null,
+    //     originalYamlValues:  null,
+    //     previousYamlValues:  null,
+    //     yamlValues:          saferDump(defaultPolicy),
+    //     preYamlOption:      VALUES_STATE.FORM,
+    //     yamlOption:         VALUES_STATE.YAML,
+    //   };
+
+    //   for ( const [key, value] of Object.entries(out) ) {
+    //     this[key] = value;
+    //   }
+    // },
+
+    policyQuestions() {
+      const match = require(`@/.questions/policies/${ this.type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '') }.json`);
+
+      if ( match ) {
+        this.$set(this.chartValues, 'policy', match);
+      }
+
+      // Add a field to the questions object
+      if ( match?.spec?.settings ) {
+        for ( const [key, value] of Object.entries(match.spec.settings) ) {
+          const out = {
+            default:  value,
+            group:    'Settings',
+            label:    key,
+            type:     typeOf(value),
+            variable: `policy.spec.settings.${ key }`
+          };
+
+          this.chartValues?.questions?.questions?.push(out);
+        }
+      }
     }
   }
 
@@ -380,7 +420,7 @@ export default ({
     >
       <template #basics>
         <form
-          :is="(isView? 'div' : 'form')"
+          :is="( isView ? 'div' : 'form' )"
           class="create-resource-container step__basic"
           @next="next"
         >

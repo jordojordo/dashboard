@@ -77,12 +77,6 @@ export function init(store) {
           user_group_psp:                 { type: SPOOFED.USER_GROUP_PSP },
           volumes_psp:                    { type: SPOOFED.VOLUMES_PSP },
         }
-      },
-      {
-        id:             SPOOFED.HOSTPATHS_PSP, // This is just recreating what I need to get from helm for policy charts
-        type:           'schema',
-        group:          'kubewarden',
-        resourceFields: { questions: { allowedHostPaths: { type: 'array[string]' } } }
       }
     ]
   });

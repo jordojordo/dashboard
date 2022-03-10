@@ -1,0 +1,19 @@
+{
+  "apiVersion": "policies.kubewarden.io/v1alpha2",
+  "kind": "",
+  "metadata": {
+    "name": "ingress"
+  },
+  "spec": {
+    "policyServer": "default",
+    "module": "ghcr.io/kubewarden/policies/ingress:v0.1.11",
+    "rules": {
+      "apiGroups": "",
+      "apiVersions": "v1",
+      "resources": "ingress",
+      "operations": "CREATE"
+    },
+    "mutating": false,
+    "settings": {}
+  }
+}
