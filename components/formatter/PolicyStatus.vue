@@ -38,15 +38,17 @@ export default {
   methods: {
     colorForStatus(value) {
       switch (value) {
-      case 'unscheduled':
-        return 'text-warning';
+      case 'unschedulable':
+        return 'text-error';
+      case 'pending':
+        return 'text-info';
       case 'active':
         return 'text-success';
       default:
         break;
       }
 
-      return 'text-error';
+      return 'text-warning'; // 'unscheduled' is the default state
     },
   }
 };
