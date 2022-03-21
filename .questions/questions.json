@@ -13,6 +13,14 @@
       "variable": "policy.metadata.name"
     },
     {
+      "default": "",
+      "description": "The namespace for your policy",
+      "group": "Metadata",
+      "label": "Policy Namespace",
+      "type": "string",
+      "variable": "policy.metadata.namespace"
+    },
+    {
       "default": "default",
       "description": "The PolicyServer that will receive the requests to be validated.",
       "group": "Metadata",

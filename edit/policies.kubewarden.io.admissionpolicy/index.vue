@@ -8,7 +8,7 @@ import PolicyResource from '@/edit/policies.kubewarden.io/PolicyResource';
 import Create from '@/edit/policies.kubewarden.io/Create';
 
 export default {
-  name: 'CruClusterAdmissionPolicy',
+  name: 'CruAdmissionPolicy',
 
   props: {
     value: {
@@ -38,7 +38,7 @@ export default {
   data() {
     let type = this.$route.params.resource;
 
-    if ( type === KUBEWARDEN.CLUSTER_ADMISSION_POLICY ) {
+    if ( type === KUBEWARDEN.ADMISSION_POLICY ) {
       type = null;
     }
 

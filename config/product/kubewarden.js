@@ -108,7 +108,7 @@ export function init(store) {
   ]);
 
   headers(ADMISSION_POLICY, [
-    STATE,
+    ADMISSION_POLICY_STATE,
     NAME_HEADER,
     {
       name:  'capPolicyServer',

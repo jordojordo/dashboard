@@ -84,8 +84,8 @@ export default ({
     }
 
     this.yamlValues = saferDump(defaultPolicy);
-    this.value.apiVersion = 'policies.kubewarden.io/v1alpha2';
-    this.value.kind = 'ClusterAdmissionPolicy';
+    this.value.apiVersion = `${ this.schema?.attributes?.group }.${ this.schema?.attributes?.version }`;
+    this.value.kind = this.schema?.attributes?.kind;
 
     const query = this.$route.query;
 
@@ -313,7 +313,7 @@ export default ({
         params: {
           cluster:  this.$route.params.cluster,
           product:  'kubewarden',
-          resource: KUBEWARDEN.CLUSTER_ADMISSION_POLICY
+          resource: this.schema?.id
         }
       });
     },

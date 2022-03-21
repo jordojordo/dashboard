@@ -5,7 +5,7 @@ import { SERVICE } from '@/config/types';
 import { monitoringStatus } from '@/utils/monitoring';
 import { dashboardExists } from '@/utils/grafana';
 import CreateEditView from '@/mixins/create-edit-view';
-import { POLICY_METRICS_URL, TRACE_HEADERS } from '@/models/policies.kubewarden.io.clusteradmissionpolicy';
+import { POLICY_METRICS_URL, TRACE_HEADERS } from '@/models/policies.kubewarden.io.admissionpolicy';
 
 import DashboardMetrics from '@/components/DashboardMetrics';
 import ResourceTabs from '@/components/form/ResourceTabs';
@@ -13,7 +13,7 @@ import ResourceTable from '@/components/ResourceTable';
 import Tab from '@/components/Tabbed/Tab';
 
 export default {
-  name: 'ClusterAdmissionPolicy',
+  name: 'AdmissionPolicy',
 
   components: {
     DashboardMetrics, ResourceTabs, ResourceTable, Tab
