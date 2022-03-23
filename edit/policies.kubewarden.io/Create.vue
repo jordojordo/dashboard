@@ -1,7 +1,8 @@
 <script>
 import jsyaml from 'js-yaml';
-import merge from 'lodash/merge';
 import cloneDeep from 'lodash/cloneDeep';
+import merge from 'lodash/merge';
+import isEmpty from 'lodash/isEmpty';
 import { mapGetters } from 'vuex';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
@@ -15,7 +16,7 @@ import { sortBy, typeOf } from '@/utils/sort';
 
 import ButtonGroup from '@/components/ButtonGroup';
 import LabeledSelect from '@/components/form/LabeledSelect';
-import Questions from '@/components/Questions';
+import Loading from '@/components/Loading';
 import ResourceCancelModal from '@/components/ResourceCancelModal';
 import Select from '@/components/form/Select';
 import Tabbed from '@/components/Tabbed';
@@ -34,7 +35,7 @@ export default ({
   name: 'Create',
 
   components: {
-    ButtonGroup, LabeledSelect, Questions, ResourceCancelModal, Select, Tabbed, Wizard, YamlEditor
+    ButtonGroup, LabeledSelect, Loading, ResourceCancelModal, Select, Tabbed, Wizard, YamlEditor
   },
 
   props: {
@@ -51,6 +52,21 @@ export default ({
   mixins: [ChartMixin, CreateEditView],
 
   async fetch() {
+    this.errors = [];
+
+    try {
+      this.version = this.$store.getters['catalog/version']({
+        repoType:      'cluster',
+        repoName:      'kubewarden',
+        chartName:     'kubewarden-controller',
+      });
+
+      await this.loadValuesComponent();
+    } catch (e) {
+      console.error(`Unable to fetch Version: ${ e }`); // eslint-disable-line no-console
+      this.errors.push(e);
+    }
+
     try {
       // Without importing this here the object would maintain the state
       // We've got some weirdness going on here...
@@ -68,19 +84,6 @@ export default ({
       };
     } catch (e) {
       console.error(`Error importing questions ${ e }`); // eslint-disable-line no-console
-    }
-
-    this.errors = [];
-
-    try {
-      this.version = this.$store.getters['catalog/version']({
-        repoType:      'cluster',
-        repoName:      'kubewarden',
-        chartName:     'kubewarden-controller',
-      });
-    } catch (e) {
-      console.error(`Unable to fetch Version: ${ e }`); // eslint-disable-line no-console
-      this.errors.push(e);
     }
 
     this.yamlValues = saferDump(defaultPolicy);
@@ -110,6 +113,7 @@ export default ({
       preYamlOption:       VALUES_STATE.FORM,
       yamlOption:          VALUES_STATE.YAML,
       showQuestions:       this.isSelected,
+      valuesComponent:     null,
 
       stepBasic:     {
         name:   'basics',
@@ -158,6 +162,10 @@ export default ({
         }
       ]
     };
+  },
+
+  provide() {
+    return { chartType: this.value.type };
   },
 
   watch: {
@@ -267,19 +275,18 @@ export default ({
 
       return out;
     },
-
-    targetNamespace() {
-      if ( this.forceNamespace ) {
-        return this.forceNamespace;
-      } else if ( this.value?.metadata.namespace ) {
-        return this.value.metadata.namespace;
-      }
-
-      return 'default';
-    },
   },
 
   methods: {
+    async loadValuesComponent() {
+      if ( this.$store.getters['catalog/haveComponent']('kubewarden') ) {
+        this.valuesComponent = this.$store.getters['catalog/importComponent']('kubewarden');
+        await this.valuesComponent();
+
+        this.showValuesComponent = true;
+      }
+    },
+
     selectType(type) {
       this.type = type;
 
@@ -320,14 +327,9 @@ export default ({
 
     async finish() {
       try {
-        if ( this.chartValues?.policy ) {
-          const r = {};
-
-          for ( const [key, value] of Object.entries(this.chartValues.policy?.spec?.rules) ) {
-            Object.assign(r, { [key]: value.split(' ') });
-          }
-
-          this.chartValues.policy.spec.rules = [r];
+        // This won't be necessary if we can get the policy to automatically apply a default value for this property
+        if ( isEmpty(this.chartValues?.policy?.spec?.rules[0]?.apiGroups) ) {
+          this.chartValues.policy.spec.rules[0].apiGroups.push('');
         }
 
         const out = this.chartValues?.policy ? this.chartValues.policy : jsyaml.load(this.yamlValues);
@@ -404,7 +406,8 @@ export default ({
 </script>
 
 <template>
-  <div>
+  <Loading v-if="$fetchState.pending" mode="relative" />
+  <div v-else>
     <Wizard
       v-if="value"
       ref="wizard"
@@ -513,19 +516,17 @@ export default ({
         <div class="scroll__container">
           <div class="scroll__content">
             <template v-if="showQuestions">
+              <!-- Values as custom component -->
               <Tabbed
                 ref="tabs"
                 :side-tabs="true"
                 class="step__values__content"
                 @changed="tabChanged($event)"
               >
-                <Questions
-                  v-if="chartValues"
+                <component
+                  :is="valuesComponent"
                   v-model="chartValues"
                   :mode="mode"
-                  :source="chartValues"
-                  tabbed="multiple"
-                  :target-namespace="targetNamespace"
                 />
               </Tabbed>
             </template>

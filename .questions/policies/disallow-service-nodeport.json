@@ -7,12 +7,20 @@
   "spec": {
     "policyServer": "default",
     "module": "ghcr.io/kubewarden/policies/disallow-service-nodeport:v0.1.2",
-    "rules": {
-      "apiGroups": "",
-      "apiVersions": "v1",
-      "resources": "services",
-      "operations": "CREATE"
-    },
+    "rules": [
+      {
+        "apiGroups": [],
+        "apiVersions": [
+          "v1"
+        ],
+        "resources": [
+          "services"
+        ],
+        "operations": [
+          "CREATE"
+        ]
+      }
+    ],
     "mutating": false,
     "settings": {}
   }

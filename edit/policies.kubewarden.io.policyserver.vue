@@ -87,7 +87,7 @@ export default {
         <div class="spacer"></div>
         <div class="row">
           <div class="col span-12">
-            <NameNsDescription :mode="mode" :value="value" :namespaced="false" @change="name=value.metadata.name" />
+            <NameNsDescription :mode="mode" :value="value" :namespaced="false" @change="name = value.metadata.name" />
           </div>
         </div>
         <div class="row">

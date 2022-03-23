@@ -9,9 +9,7 @@
     "module": "",
     "rules": [
       {
-        "apiGroups": [
-          ""
-        ],
+        "apiGroups": [],
         "apiVersions": [
           "v1"
         ],

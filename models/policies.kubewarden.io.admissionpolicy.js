@@ -55,15 +55,15 @@ export default class AdmissionPolicy extends SteveModel {
   //   };
   // }
 
-  // get detailPageHeaderBadgeOverride() {
-  //   return this.status?.policyStatus;
-  // }
+  get detailPageHeaderBadgeOverride() {
+    return this.status?.policyStatus;
+  }
 
-  // get componentForBadge() {
-  //   if ( this.detailPageHeaderBadgeOverride ) {
-  //     return require(`@/components/formatter/PolicyStatus.vue`).default;
-  //   }
+  get componentForBadge() {
+    if ( this.detailPageHeaderBadgeOverride ) {
+      return require(`@/components/formatter/PolicyStatus.vue`).default;
+    }
 
-  //   return null;
-  // }
+    return null;
+  }
 }

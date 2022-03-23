@@ -7,12 +7,20 @@
   "spec": {
     "policyServer": "default",
     "module": "ghcr.io/kubewarden/policies/safe-labels:v0.1.7",
-    "rules": {
-      "apiGroups": "",
-      "apiVersions": "v1",
-      "resources": "*",
-      "operations": "CREATE"
-    },
+    "rules": [
+      {
+        "apiGroups": [],
+        "apiVersions": [
+          "v1"
+        ],
+        "resources": [
+          "*"
+        ],
+        "operations": [
+          "CREATE"
+        ]
+      }
+    ],
     "mutating": false,
     "settings": {}
   }

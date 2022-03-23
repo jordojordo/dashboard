@@ -7,12 +7,20 @@
   "spec": {
     "policyServer": "default",
     "module": "ghcr.io/kubewarden/policies/pod-runtime:v0.1.4",
-    "rules": {
-      "apiGroups": "",
-      "apiVersions": "v1",
-      "resources": "pods",
-      "operations": "CREATE"
-    },
+    "rules": [
+      {
+        "apiGroups": [],
+        "apiVersions": [
+          "v1"
+        ],
+        "resources": [
+          "pods"
+        ],
+        "operations": [
+          "CREATE"
+        ]
+      }
+    ],
     "mutating": false,
     "settings": {}
   }
