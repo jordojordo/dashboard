@@ -83,9 +83,9 @@ export default {
       const out = this.traces?.data?.map((trace) => {
         const span = trace.spans.find(s => s.operationName === 'validation');
 
-        const date = new Date(span.startTime);
+        const date = new Date(span.startTime / 1000);
 
-        span.startTime = date;
+        span.startTime = date.toUTCString();
 
         const tags = span.tags.filter(t => (
           t.key === 'kind' || t.key === 'name' || t.key === 'namespace' || t.key === 'operation'
