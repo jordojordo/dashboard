@@ -7,22 +7,16 @@ export const POLICY_METRICS_URL = `/api/v1/namespaces/cattle-monitoring-system/s
 
 export const TRACE_HEADERS = [
   {
+    name:  'operation',
+    value: 'operation',
+    label: 'Operation',
+    sort:  'operation'
+  },
+  {
     name:   'kind',
     value:  'kind',
     label:  'Kind',
     sort:   'kind'
-  },
-  {
-    name:   'startTime',
-    value:  'startTime',
-    label:  'Start Time',
-    sort:   'startTime'
-  },
-  {
-    name:   'duration',
-    value:  'duration',
-    label:  'Duration (ms)',
-    sort:   'duration'
   },
   {
     name:  'name',
@@ -37,12 +31,24 @@ export const TRACE_HEADERS = [
     sort:  'namespace'
   },
   {
-    name:  'operation',
-    value: 'operation',
-    label: 'Operation',
-    sort:  'operation'
+    name:   'startTime',
+    value:  'startTime',
+    label:  'Start Time',
+    sort:   'startTime:desc'
   },
+  {
+    name:   'duration',
+    value:  'duration',
+    label:  'Duration (ms)',
+    sort:   'duration'
+  }
 ];
+
+export const OPERATION_MAP = {
+  CREATE: 'bg-info',
+  UPDATE: 'bg-warning',
+  DELETE: 'bg-error'
+};
 
 export default class AdmissionPolicy extends SteveModel {
   // get allPolicies() {
