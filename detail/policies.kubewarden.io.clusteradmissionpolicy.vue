@@ -40,11 +40,12 @@ export default {
   async fetch() {
     const inStore = this.$store.getters['currentStore'](this.resource);
     const CLUSTER_PATH = `/k8s/clusters/${ this.currentCluster?.id }/api/v1/namespaces`;
-
     const JAEGER_PROXY = `${ CLUSTER_PATH }/jaeger/services/http:all-in-one-query:16686/proxy/api/traces?service=kubewarden-policy-server&operation=validation&tags={"allowed"%3A"false"}`;
 
     try {
-      this.metricsService = this.monitoringStatus.installed && await dashboardExists(this.$store, this.currentCluster?.id, POLICY_METRICS_URL);
+      if ( this.monitoringStatus.installed ) {
+        this.metricsService = await dashboardExists(this.$store, this.currentCluster?.id, POLICY_METRICS_URL);
+      }
     } catch (e) {
       console.error(`Error fetching metrics status: ${ e }`); // eslint-disable-line no-console
     }
@@ -63,6 +64,7 @@ export default {
       TRACE_HEADERS,
 
       metricsService:     null,
+      metricsUrl:         null,
       jaegerService:      null,
       traces:             null,
     };
@@ -73,7 +75,7 @@ export default {
     ...monitoringStatus(),
 
     dashboardVars() {
-      return { policy_name: this.value?.id };
+      return { policy_name: `clusterwide-${ this.value?.id }` };
     },
 
     hasMetricsTabs() {
