@@ -259,13 +259,15 @@ export default ({
 
         if ( type !== SPOOFED.POLICIES && type !== SPOOFED.POLICY ) {
           const shortType = type.replace(`${ SPOOFED.POLICIES }.`, '');
+          const resourceType = this.t(`kubewarden.policyCharts.${ shortType }.resourceType`);
 
           const subtype = {
             key,
+            resourceType,
+            icon:         this.subtypeIcon(resourceType),
             id:           type,
             label:        this.t(`kubewarden.policyCharts.${ shortType }.name`),
             description:  this.t(`kubewarden.policyCharts.${ shortType }.description`),
-            resourceType: this.t(`kubewarden.policyCharts.${ shortType }.resourceType`),
             keywords:     this.t(`kubewarden.policyCharts.${ shortType }.keywords`).split('\n').slice(0, -1)
           };
 
@@ -300,6 +302,10 @@ export default ({
 
       this.policyQuestions();
       this.$refs.wizard.next();
+    },
+
+    subtypeIcon(type) {
+      return require(`~/assets/icons/${ type.toLowerCase() }.png`);
     },
 
     tabChanged() {
@@ -684,7 +690,7 @@ export default ({
 
       &__badge {
         position: absolute;
-        padding: 2px 5px;
+        padding: 2px 10px;
         background-color: var(--app-rancher-accent);
         border-radius: calc( 1.5 * var(--border-radius));
 
