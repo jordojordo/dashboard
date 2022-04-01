@@ -1,8 +1,8 @@
 <script>
 import { _CREATE } from '@/config/query-params';
 
-import General from '@/chart/kubewarden/General';
-import Rules from '@/chart/kubewarden/Rules';
+import General from '@/chart/kubewarden/admission/General';
+import Rules from '@/chart/kubewarden/admission/Rules';
 
 import Questions from '@/components/Questions';
 import Tab from '@/components/Tabbed/Tab';

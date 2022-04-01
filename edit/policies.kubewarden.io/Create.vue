@@ -7,7 +7,7 @@ import { mapGetters } from 'vuex';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
 import {
-  CATEGORY, _CREATE, _VIEW, CHART, REPO, REPO_TYPE, SEARCH_QUERY
+  CATEGORY, _CREATE, CHART, REPO, REPO_TYPE, SEARCH_QUERY
 } from '@/config/query-params';
 import { KUBEWARDEN } from '@/config/types';
 import { saferDump } from '@/utils/create-yaml';
@@ -24,7 +24,6 @@ import Wizard from '@/components/Wizard';
 import YamlEditor, { EDITOR_MODES } from '@/components/YamlEditor';
 
 import defaultPolicy from '@/.questions/defaultPolicy.json';
-// import questionsJson from '@/.questions/questions.json';
 
 const VALUES_STATE = {
   FORM: 'FORM',
@@ -187,10 +186,6 @@ export default ({
     ...mapGetters(['currentCluster']),
     ...mapGetters({ t: 'i18n/t' }),
 
-    isView() {
-      return this.mode === _VIEW;
-    },
-
     isSelected() {
       return !!this.type;
     },
@@ -281,8 +276,8 @@ export default ({
 
   methods: {
     async loadValuesComponent() {
-      if ( this.$store.getters['catalog/haveComponent']('kubewarden') ) {
-        this.valuesComponent = this.$store.getters['catalog/importComponent']('kubewarden');
+      if ( this.$store.getters['catalog/haveComponent']('kubewarden/admission') ) {
+        this.valuesComponent = this.$store.getters['catalog/importComponent']('kubewarden/admission');
         await this.valuesComponent();
 
         this.showValuesComponent = true;
@@ -570,8 +565,8 @@ export default ({
   $logo: 60px;
 
   ::v-deep .step-container {
-      height: auto;
-    }
+    height: auto;
+  }
 
   .step {
     &__basic {
