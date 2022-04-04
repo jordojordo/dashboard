@@ -242,7 +242,7 @@ export default ({
         this.stepValues
       );
 
-      return steps.sort((a, b) => ( b.weight || 0 ) - ( a.weight || 0 ));
+      return steps.sort((a, b) => b.weight - a.weight);
     },
 
     subtypes() {

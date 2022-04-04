@@ -1,6 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { _CREATE, _EDIT } from '@/config/query-params';
+import { KUBEWARDEN } from '@/config/types';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
 
@@ -28,8 +29,7 @@ export default {
   },
 
   async fetch() {
-    // There is no chart associated with PolicyServer, will have to try something else...
-    await this.fetchChart();
+    await this.$store.getters['cluster/schemaFor'](KUBEWARDEN.POLICY_SERVER);
   },
 
   data() {

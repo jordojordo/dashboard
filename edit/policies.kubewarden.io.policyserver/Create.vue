@@ -1,7 +1,9 @@
 <script>
+import cloneDeep from 'lodash/cloneDeep';
 import { _CREATE } from '@/config/query-params';
 import CreateEditView from '@/mixins/create-edit-view';
 import { VALUES_STATE, YAML_OPTIONS } from '@/models/policies.kubewarden.io.policyserver';
+import { saferDump } from '@/utils/create-yaml';
 
 import ButtonGroup from '@/components/ButtonGroup';
 import Loading from '@/components/Loading';
@@ -10,6 +12,8 @@ import ResourceCancelModal from '@/components/ResourceCancelModal';
 import Tabbed from '@/components/Tabbed';
 import Wizard from '@/components/Wizard';
 import YamlEditor from '@/components/YamlEditor';
+
+import defaultPolicyServer from '@/.questions/defaultPolicyServer.json';
 
 export default {
   name: 'Create',
@@ -39,16 +43,26 @@ export default {
     } catch (e) {
       console.error(`Error loading values component: ${ e }`); // eslint-disable-line no-console
     }
+
+    const _defaultJson = cloneDeep(JSON.parse(JSON.stringify(defaultPolicyServer)));
+
+    this.chartValues = { questions: _defaultJson };
+    this.yamlValues = saferDump(defaultPolicyServer);
+
+    this.value.apiVersion = `${ this.schema?.attributes?.group }.${ this.schema?.attributes?.version }`;
+    this.value.kind = this.schema?.attributes?.kind;
   },
 
   data() {
     return {
-      errors: null,
-
+      errors:              null,
       showQuestions:       true,
       showValuesComponent: false,
       valuesComponent:     null,
       yamlOption:          VALUES_STATE.YAML,
+
+      chartValues:         null,
+      yamlValues:          null,
 
       YAML_OPTIONS,
 
@@ -91,7 +105,7 @@ export default {
         this.stepValues
       );
 
-      return steps.sort((a, b) => ( b.weight || 0 ) - ( a.weight || 0 ));
+      return steps.sort((a, b) => b.weight - a.weight);
     },
   },
 
@@ -134,7 +148,7 @@ export default {
         :is="( isCreate ? 'form' : 'div' )"
         class="create-resource-container step__basic"
       >
-        <div class="row">
+        <div class="row mt-10">
           <div class="col span-12">
             <NameNsDescription
               :mode="mode"
@@ -161,7 +175,7 @@ export default {
         ></ButtonGroup>
       </div>
       <div class="scroll__container">
-        <!-- <div class="scroll__content">
+        <div class="scroll__content">
           <template v-if="showQuestions">
             <Tabbed
               ref="tabs"
@@ -195,7 +209,7 @@ export default {
             @cancel-cancel="preYamlOption = yamlOption"
             @confirm-cancel="yamlOption = preYamlOption"
           />
-        </div> -->
+        </div>
       </div>
     </template>
   </Wizard>
