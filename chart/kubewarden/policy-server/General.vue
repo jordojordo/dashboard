@@ -2,6 +2,7 @@
 import { _CREATE } from '@/config/query-params';
 
 import LabeledInput from '@/components/form/LabeledInput';
+import NameNsDescription from '@/components/form/NameNsDescription';
 import RadioGroup from '@/components/form/RadioGroup';
 
 export default {
@@ -16,7 +17,9 @@ export default {
     }
   },
 
-  components: { LabeledInput, RadioGroup },
+  components: {
+    LabeledInput, NameNsDescription, RadioGroup
+  },
 
   data() {
     return { defaultImage: true };
@@ -26,8 +29,19 @@ export default {
 
 <template>
   <div>
-    <div class="row">
+    <div class="row mt-10">
       <div class="col span-12">
+        <NameNsDescription
+          :mode="mode"
+          :value="value"
+          :namespaced="false"
+          :description-hidden="true"
+          name-key="metadata.name"
+        />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col span-6">
         <RadioGroup
           v-model="defaultImage"
           name="defaultImage"

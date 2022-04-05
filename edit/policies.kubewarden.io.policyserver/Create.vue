@@ -1,5 +1,7 @@
 <script>
+import jsyaml from 'js-yaml';
 import cloneDeep from 'lodash/cloneDeep';
+import merge from 'lodash/merge';
 import { _CREATE } from '@/config/query-params';
 import CreateEditView from '@/mixins/create-edit-view';
 import { VALUES_STATE, YAML_OPTIONS } from '@/models/policies.kubewarden.io.policyserver';
@@ -7,7 +9,6 @@ import { saferDump } from '@/utils/create-yaml';
 
 import ButtonGroup from '@/components/ButtonGroup';
 import Loading from '@/components/Loading';
-import NameNsDescription from '@/components/form/NameNsDescription';
 import ResourceCancelModal from '@/components/ResourceCancelModal';
 import Tabbed from '@/components/Tabbed';
 import Wizard from '@/components/Wizard';
@@ -30,7 +31,7 @@ export default {
   },
 
   components: {
-    ButtonGroup, Loading, NameNsDescription, ResourceCancelModal, Tabbed, Wizard, YamlEditor
+    ButtonGroup, Loading, ResourceCancelModal, Tabbed, Wizard, YamlEditor
   },
 
   mixins: [CreateEditView],
@@ -66,17 +67,11 @@ export default {
 
       YAML_OPTIONS,
 
-      stepBasic:     {
-        name:   'basics',
-        label:  'Metadata',
-        ready:  true,
-        weight: 99
-      },
       stepValues:    {
         name:   'values',
         label:  'Values',
         ready:  true,
-        weight: 98
+        weight: 99
       },
     };
   },
@@ -101,7 +96,6 @@ export default {
       const steps = [];
 
       steps.push(
-        this.stepBasic,
         this.stepValues
       );
 
@@ -123,6 +117,24 @@ export default {
       this.done();
     },
 
+    async finish() {
+      try {
+        if ( this.chartValues?.questions?.spec?.sourceAuthorities ) {
+          const s = this.chartValues.questions.spec.sourceAuthorities.split();
+
+          this.chartValues.questions.spec.sourceAuthorities = s;
+        }
+        const out = this.chartValues?.questions ? this.chartValues.questions : jsyaml.load(this.yamlValues);
+
+        merge(this.value, out);
+
+        await this.save();
+      } catch (e) {
+        console.error(`Error when saving: ${ e }`); // eslint-disable-line no-console
+        this.errors.push(e);
+      }
+    },
+
     tabChanged() {
       window.scrollTop = 0;
     },
@@ -137,34 +149,13 @@ export default {
     ref="wizard"
     v-model="value"
     :errors="errors"
+    :show-banner="false"
     :steps="steps"
     :edit-first-step="true"
     class="wizard"
     @cancel="cancel"
     @finish="finish"
   >
-    <template #basics>
-      <form
-        :is="( isCreate ? 'form' : 'div' )"
-        class="create-resource-container step__basic"
-      >
-        <div class="row mt-10">
-          <div class="col span-12">
-            <NameNsDescription
-              :mode="mode"
-              :value="value"
-              :description-hidden="true"
-              name-key="metadata.name"
-              namespace-key="metadata.namespace"
-            />
-            <div class="step__values__controls--spacer">
-&nbsp;
-            </div>
-          </div>
-        </div>
-      </form>
-    </template>
-
     <template #values>
       <div class="step__values__controls">
         <ButtonGroup

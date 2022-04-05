@@ -49,7 +49,7 @@ export default {
       <Labels v-model="chartValues.metadata" :mode="mode" />
     </Tab>
     <Tab name="verification" label="Verification" :weight="97">
-      <Verification :value="chartValues.spec" :mode="mode" />
+      <Verification :value="chartValues.spec" :namespace="targetNamespace" :mode="mode" />
     </Tab>
   </div>
 </template>
