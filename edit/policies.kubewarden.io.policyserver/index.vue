@@ -1,17 +1,16 @@
 <script>
 import { mapGetters } from 'vuex';
-import { _CREATE, _EDIT } from '@/config/query-params';
+import { _EDIT, _VIEW } from '@/config/query-params';
 import { KUBEWARDEN } from '@/config/types';
-import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
 
-import Create from '@/edit/policies.kubewarden.io.policyserver/Create';
-import CruResource from '@/components/CruResource';
+import Edit from '@/edit/policies.kubewarden.io.policyserver/Edit';
+import Detail from '@/edit/policies.kubewarden.io.policyserver/Detail';
 
 export default {
-  components: { Create, CruResource },
+  components: { Edit, Detail },
 
-  mixins: [ChartMixin, CreateEditView],
+  mixins: [CreateEditView],
 
   props: {
     mode: {
@@ -40,33 +39,14 @@ export default {
     ...mapGetters(['currentCluster']),
     ...mapGetters({ t: 'i18n/t' }),
 
-    isCreate() {
-      return this.realMode === _CREATE;
-    },
-  },
-
-  methods: {
-    async finish() {
-      try {
-        await this.save();
-      } catch (e) {
-        console.error(`Error when saving: ${ e }`); // eslint-disable-line no-console
-        this.errors.push(e);
-      }
-    },
+    isView() {
+      return this.realMode === _VIEW;
+    }
   }
 };
 </script>
 
 <template>
-  <Create v-if="isCreate" :value="value" :mode="mode" />
-  <CruResource
-    v-else
-    :resource="value"
-    :mode="realMode"
-    :errors="errors"
-    @error="e => errors = e"
-    @finish="finish"
-  >
-  </CruResource>
+  <Edit v-if="!isView" :value="value" :mode="mode" />
+  <Detail v-else :value="value" :mode="mode" />
 </template>
