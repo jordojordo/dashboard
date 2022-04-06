@@ -1,11 +1,7 @@
 <script>
 import { _CREATE } from '@/config/query-params';
-import { VALUES_STATE, YAML_OPTIONS } from '@/models/policies.kubewarden.io.policyserver';
 
-import ButtonGroup from '@/components/ButtonGroup';
-import ResourceCancelModal from '@/components/ResourceCancelModal';
 import Tabbed from '@/components/Tabbed';
-import YamlEditor from '@/components/YamlEditor';
 
 export default {
   name: 'Values',
@@ -19,19 +15,13 @@ export default {
       type:     Object,
       required: true
     },
-    yamlValues: {
-      type:     Object,
-      required: true
-    },
     value: {
       type:     Object,
       required: true
     }
   },
 
-  components: {
-    ButtonGroup, ResourceCancelModal, Tabbed, YamlEditor
-  },
+  components: { Tabbed },
 
   async fetch() {
     try {
@@ -43,27 +33,16 @@ export default {
 
   data() {
     return {
-      YAML_OPTIONS,
       showQuestions:       true,
       showValuesComponent: false,
-      valuesComponent:     null,
-      yamlOption:          VALUES_STATE.YAML,
+      valuesComponent:     null
     };
   },
 
-  watch: {
-    yamlOption(neu, old) {
-      switch (neu) {
-      case VALUES_STATE.FORM:
-        this.showQuestions = true;
-
-        break;
-      case VALUES_STATE.YAML:
-        this.showQuestions = false;
-
-        break;
-      }
-    },
+  computed: {
+    isCreate() {
+      return this.mode === _CREATE;
+    }
   },
 
   methods: {
@@ -85,49 +64,20 @@ export default {
 
 <template>
   <div>
-    <div class="step__values__controls">
-      <ButtonGroup
-        v-model="yamlOption"
-        :options="YAML_OPTIONS"
-        inactive-class="bg-disabled btn-sm"
-        active-class="bg-primary btn-sm"
-      ></ButtonGroup>
-    </div>
     <div class="scroll__container">
       <div class="scroll__content">
-        <template v-if="showQuestions">
-          <Tabbed
-            ref="tabs"
-            :side-tabs="true"
-            class="step__values__content"
-            @changed="tabChanged($event)"
-          >
-            <component
-              :is="valuesComponent"
-              v-model="chartValues"
-              :mode="mode"
-            />
-          </Tabbed>
-        </template>
-        <template v-else>
-          <YamlEditor
-            ref="yaml"
-            v-model="yamlValues"
-            class="step__values__content"
-            :scrolling="true"
-            :initial-yaml-values="originalYamlValues"
-            :editor-mode="editorMode"
-            :hide-preview-buttons="true"
+        <Tabbed
+          ref="tabs"
+          :side-tabs="true"
+          class="step__values__content"
+          @changed="tabChanged($event)"
+        >
+          <component
+            :is="valuesComponent"
+            v-model="chartValues"
+            :mode="mode"
           />
-        </template>
-
-        <ResourceCancelModal
-          ref="cancelModal"
-          :is-cancel-modal="false"
-          :is-form="true"
-          @cancel-cancel="preYamlOption = yamlOption"
-          @confirm-cancel="yamlOption = preYamlOption"
-        />
+        </Tabbed>
       </div>
     </div>
   </div>

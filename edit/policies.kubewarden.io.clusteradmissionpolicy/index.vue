@@ -3,12 +3,13 @@ import { KUBEWARDEN } from '@/config/types';
 import { _CREATE, _EDIT } from '@/config/query-params';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
+
 import CruResource from '@/components/CruResource';
-import PolicyResource from '@/edit/policies.kubewarden.io/PolicyResource';
+import Config from '@/edit/policies.kubewarden.io/Config';
 import Create from '@/edit/policies.kubewarden.io/Create';
 
 export default {
-  name: 'CruClusterAdmissionPolicy',
+  name: 'ClusterAdmissionPolicy',
 
   props: {
     value: {
@@ -26,7 +27,7 @@ export default {
   },
 
   components: {
-    CruResource, PolicyResource, Create
+    CruResource, Config, Create
   },
 
   mixins: [ChartMixin, CreateEditView],
@@ -60,14 +61,6 @@ export default {
         this.errors.push(e);
       }
     },
-
-    selectType(type) {
-      if (!this.type && type) {
-        this.$router.replace({ params: { resource: type } });
-      } else {
-        this.type = type;
-      }
-    },
   }
 };
 </script>
@@ -76,14 +69,10 @@ export default {
   <Create v-if="isCreate" :value="value" :mode="mode" />
   <CruResource
     v-else
-    :mode="realMode"
     :resource="value"
+    :mode="realMode"
     @finish="finish"
   >
-    <PolicyResource
-      :value="value"
-      :mode="realMode"
-      :resource="type"
-    />
+    <Config :value="value" :mode="mode" />
   </CruResource>
 </template>

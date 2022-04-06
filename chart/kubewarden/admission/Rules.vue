@@ -58,7 +58,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div v-if="rules">
     <div class="row mb-20">
       <div class="col span-12">
         <LabeledSelect

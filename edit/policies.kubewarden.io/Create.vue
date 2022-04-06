@@ -21,50 +21,32 @@ import ResourceCancelModal from '@/components/ResourceCancelModal';
 import Select from '@/components/form/Select';
 import Tabbed from '@/components/Tabbed';
 import Wizard from '@/components/Wizard';
-import YamlEditor, { EDITOR_MODES } from '@/components/YamlEditor';
+import Values from '@/edit/policies.kubewarden.io/Values';
 
 import defaultPolicy from '@/.questions/defaultPolicy.json';
-
-const VALUES_STATE = {
-  FORM: 'FORM',
-  YAML: 'YAML',
-};
 
 export default ({
   name: 'Create',
 
   components: {
-    ButtonGroup, LabeledSelect, Loading, ResourceCancelModal, Select, Tabbed, Wizard, YamlEditor
+    ButtonGroup, LabeledSelect, Loading, ResourceCancelModal, Select, Tabbed, Wizard, Values
   },
 
   props: {
+    mode: {
+      type:    String,
+      default: _CREATE
+    },
     value: {
       type:     Object,
       required: true
     },
-    mode: {
-      type:    String,
-      default: _CREATE
-    }
   },
 
   mixins: [ChartMixin, CreateEditView],
 
   async fetch() {
     this.errors = [];
-
-    try {
-      this.version = this.$store.getters['catalog/version']({
-        repoType:      'cluster',
-        repoName:      'kubewarden',
-        chartName:     'kubewarden-controller',
-      });
-
-      await this.loadValuesComponent();
-    } catch (e) {
-      console.error(`Unable to fetch Version: ${ e }`); // eslint-disable-line no-console
-      this.errors.push(e);
-    }
 
     try {
       // Without importing this here the object would maintain the state
@@ -74,18 +56,13 @@ export default ({
       const _questions = cloneDeep(JSON.parse(JSON.stringify(this.questions)));
 
       // This object will need to be refactored when helm charts exist for policies
-      this.chartValues = {
-        readme:      '# kubewarden readme example',
-        appReadme:   '# kubewarden appReadme example',
-        chart:       {},
-        questions:   _questions,
-        values:      {}
-      };
+      this.chartValues = { questions: _questions };
     } catch (e) {
       console.error(`Error importing questions ${ e }`); // eslint-disable-line no-console
     }
 
     this.yamlValues = saferDump(defaultPolicy);
+
     this.value.apiVersion = `${ this.schema?.attributes?.group }.${ this.schema?.attributes?.version }`;
     this.value.kind = this.schema?.attributes?.kind;
 
@@ -107,12 +84,6 @@ export default ({
 
       chartValues:         null,
       yamlValues:          null,
-      originalYamlValues:  null,
-      previousYamlValues:  null,
-      preYamlOption:       VALUES_STATE.FORM,
-      yamlOption:          VALUES_STATE.YAML,
-      showQuestions:       this.isSelected,
-      valuesComponent:     null,
 
       stepBasic:     {
         name:   'basics',
@@ -121,7 +92,7 @@ export default ({
         weight: 30
       },
       stepValues: {
-        name:   'helmValues',
+        name:   'values',
         label:  'Values',
         ready:  true,
         weight: 20
@@ -148,17 +119,6 @@ export default ({
           label: 'Service',
           value: 'Service'
         }
-      ],
-
-      yamlOptions: [
-        {
-          labelKey: 'catalog.install.section.chartOptions',
-          value:    VALUES_STATE.FORM,
-        },
-        {
-          labelKey: 'catalog.install.section.valuesYaml',
-          value:    VALUES_STATE.YAML,
-        }
       ]
     };
   },
@@ -167,31 +127,16 @@ export default ({
     return { chartType: this.value.type };
   },
 
-  watch: {
-    yamlOption(neu, old) {
-      switch (neu) {
-      case VALUES_STATE.FORM:
-        this.showQuestions = true;
-
-        break;
-      case VALUES_STATE.YAML:
-        this.showQuestions = false;
-
-        break;
-      }
-    },
-  },
-
   computed: {
     ...mapGetters(['currentCluster']),
     ...mapGetters({ t: 'i18n/t' }),
 
-    isSelected() {
-      return !!this.type;
+    isCreate() {
+      return this.realMode === _CREATE;
     },
 
-    editorMode() {
-      return EDITOR_MODES.EDIT_CODE;
+    isSelected() {
+      return !!this.type;
     },
 
     filteredSubtypes() {
@@ -275,22 +220,13 @@ export default ({
   },
 
   methods: {
-    async loadValuesComponent() {
-      if ( this.$store.getters['catalog/haveComponent']('kubewarden/admission') ) {
-        this.valuesComponent = this.$store.getters['catalog/importComponent']('kubewarden/admission');
-        await this.valuesComponent();
-
-        this.showValuesComponent = true;
-      }
-    },
-
     selectType(type) {
       this.type = type;
 
       this.$router.push({
         query: {
-          [REPO]:      'kubewarden', // =<<=================== CHANGE THIS
-          [REPO_TYPE]: 'cluster', // =<<============= AND THIS TOO
+          [REPO]:      'kubewarden',
+          [REPO_TYPE]: 'cluster',
           [CHART]:     type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, ''),
         }
       });
@@ -301,14 +237,6 @@ export default ({
 
     subtypeIcon(type) {
       return require(`~/assets/icons/${ type.toLowerCase() }.png`);
-    },
-
-    tabChanged() {
-      window.scrollTop = 0;
-    },
-
-    back() {
-      // this.reset();
     },
 
     cancel() {
@@ -344,40 +272,10 @@ export default ({
       }
     },
 
-    next() {
-      if ( !this.isSelected ) {
-        this.yamlOption = VALUES_STATE.YAML;
-      } else {
-        this.yamlOption = VALUES_STATE.FORM;
-      }
-    },
-
     refresh() {
       this.category = null;
       this.keywords = [];
     },
-
-    // reset() {
-    //   const out = {
-    //     chartValues:         {
-    //       readme:      '# kubewarden readme example',
-    //       appReadme:   '# kubewarden appReadme example',
-    //       chart:       {},
-    //       questions:   questionsJson,
-    //       values:      {}
-    //     },
-    //     type:                null,
-    //     originalYamlValues:  null,
-    //     previousYamlValues:  null,
-    //     yamlValues:          saferDump(defaultPolicy),
-    //     preYamlOption:      VALUES_STATE.FORM,
-    //     yamlOption:         VALUES_STATE.YAML,
-    //   };
-
-    //   for ( const [key, value] of Object.entries(out) ) {
-    //     this[key] = value;
-    //   }
-    // },
 
     policyQuestions() {
       const match = require(`@/.questions/policies/${ this.type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '') }.json`);
@@ -417,8 +315,6 @@ export default ({
       :steps="steps"
       :edit-first-step="true"
       class="wizard"
-      @next="next"
-      @back="back"
       @cancel="cancel"
       @finish="finish"
     >
@@ -426,7 +322,6 @@ export default ({
         <form
           :is="( isView ? 'div' : 'form' )"
           class="create-resource-container step__basic"
-          @next="next"
         >
           <div class="filter">
             <LabeledSelect
@@ -505,53 +400,8 @@ export default ({
         </form>
       </template>
 
-      <template #helmValues>
-        <div class="step__values__controls">
-          <ButtonGroup
-            v-model="yamlOption"
-            :options="yamlOptions"
-            inactive-class="bg-disabled btn-sm"
-            active-class="bg-primary btn-sm"
-          ></ButtonGroup>
-        </div>
-        <div class="scroll__container">
-          <div class="scroll__content">
-            <template v-if="showQuestions">
-              <!-- Values as custom component -->
-              <Tabbed
-                ref="tabs"
-                :side-tabs="true"
-                class="step__values__content"
-                @changed="tabChanged($event)"
-              >
-                <component
-                  :is="valuesComponent"
-                  v-model="chartValues"
-                  :mode="mode"
-                />
-              </Tabbed>
-            </template>
-            <template v-else>
-              <YamlEditor
-                ref="yaml"
-                v-model="yamlValues"
-                class="step__values__content"
-                :scrolling="true"
-                :initial-yaml-values="originalYamlValues"
-                :editor-mode="editorMode"
-                :hide-preview-buttons="true"
-              />
-            </template>
-
-            <ResourceCancelModal
-              ref="cancelModal"
-              :is-cancel-modal="false"
-              :is-form="true"
-              @cancel-cancel="preYamlOption = yamlOption"
-              @confirm-cancel="yamlOption = preYamlOption"
-            />
-          </div>
-        </div>
+      <template #values>
+        <Values :value="value" :chart-values="chartValues" :yaml-values="yamlValues" :mode="mode" />
       </template>
     </Wizard>
   </div>
@@ -577,30 +427,6 @@ export default ({
 
       .spacer {
         line-height: 2;
-      }
-    }
-
-    &__values {
-      &__controls {
-        display: flex;
-        margin-bottom: 15px;
-
-        & > *:not(:last-of-type) {
-          margin-right: $padding * 2;
-        }
-
-        &--spacer {
-          flex: 1
-        }
-
-      }
-
-      &__content {
-        flex: 1;
-
-        ::v-deep .tab-container {
-          overflow: auto;
-        }
       }
     }
   }

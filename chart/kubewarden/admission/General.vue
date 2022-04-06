@@ -39,10 +39,24 @@ export default {
   },
 
   data() {
-    return { policyServers: [] };
+    let policy = null;
+
+    if ( this.value.policy ) {
+      policy = this.value.policy;
+    } else if ( !this.isCreate && this.value.questions ) {
+      policy = this.value.questions;
+    } else {
+      policy = this.value;
+    }
+
+    return { policyServers: [], policy };
   },
 
   computed: {
+    isCreate() {
+      return this.mode === _CREATE;
+    },
+
     isGlobal() {
       return this.chartType === KUBEWARDEN.CLUSTER_ADMISSION_POLICY;
     },
@@ -68,18 +82,18 @@ export default {
       <div class="col span-12">
         <NameNsDescription
           :mode="mode"
-          :value="value"
+          :value="policy"
           :description-hidden="true"
           :namespaced="!isGlobal"
-          name-key="policy.metadata.name"
-          namespace-key="policy.metadata.namespace"
+          name-key="metadata.name"
+          namespace-key="metadata.namespace"
         />
       </div>
     </div>
     <div class="row mb-20">
       <div class="col span-6">
         <LabeledSelect
-          v-model="value.policy.spec.policyServer"
+          v-model="policy.spec.policyServer"
           :value="value"
           :mode="mode"
           :options="policyServerOptions"
@@ -89,7 +103,7 @@ export default {
       </div>
       <div class="col span-6">
         <LabeledInput
-          v-model="value.policy.spec.module"
+          v-model="policy.spec.module"
           :mode="mode"
           label="Module"
           tooltip="This is the WebAssembly module that holds the validation or mutation logic."
@@ -99,7 +113,7 @@ export default {
     <div class="row mb-20">
       <div class="col span-6">
         <RadioGroup
-          v-model="value.policy.spec.mutating"
+          v-model="policy.spec.mutating"
           name="mutating"
           :options="[false, true]"
           :mode="mode"

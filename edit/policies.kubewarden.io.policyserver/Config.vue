@@ -1,16 +1,17 @@
 <script>
-import { _EDIT } from '@/config/query-params';
+import { _VIEW } from '@/config/query-params';
 import { saferDump } from '@/utils/create-yaml';
 
+import Loading from '@/components/Loading';
 import Values from '@/edit/policies.kubewarden.io.policyserver/Values';
 
 export default {
-  name: 'Detail',
+  name: 'Config',
 
   props: {
     mode: {
       type:    String,
-      default: _EDIT
+      default: _VIEW
     },
     value: {
       type:     Object,
@@ -18,7 +19,7 @@ export default {
     }
   },
 
-  components: { Values },
+  components: { Loading, Values },
 
   fetch() {
     if ( this.value ) {
@@ -37,7 +38,6 @@ export default {
 </script>
 
 <template>
-  <div>
-    <Values :value="value" :chart-values="chartValues" :yaml-values="yamlValues" :mode="mode" />
-  </div>
+  <Loading v-if="$fetchState.pending" mode="relative" />
+  <Values v-else :value="value" :chart-values="chartValues" :yaml-values="yamlValues" :mode="mode" />
 </template>
