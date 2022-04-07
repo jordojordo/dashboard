@@ -1,5 +1,4 @@
 <script>
-import { KUBEWARDEN } from '@/config/types';
 import { _CREATE, _EDIT } from '@/config/query-params';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
@@ -34,16 +33,6 @@ export default {
 
   async fetch() {
     await this.fetchChart();
-  },
-
-  data() {
-    let type = this.$route.params.resource;
-
-    if ( type === KUBEWARDEN.CLUSTER_ADMISSION_POLICY ) {
-      type = null;
-    }
-
-    return { type };
   },
 
   computed: {

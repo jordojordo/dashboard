@@ -31,6 +31,8 @@ export default {
   },
 
   async fetch() {
+    this.errors = [];
+
     await this.$store.getters['cluster/schemaFor'](KUBEWARDEN.POLICY_SERVER);
   },
 

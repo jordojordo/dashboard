@@ -284,7 +284,7 @@ export default ({
         this.$set(this.chartValues, 'policy', match);
       }
 
-      // Add a field to the questions object
+      // Add a field from policy chart to the questions object
       if ( match?.spec?.settings ) {
         for ( const [key, value] of Object.entries(match.spec.settings) ) {
           const out = {

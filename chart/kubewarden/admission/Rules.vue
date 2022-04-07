@@ -25,6 +25,13 @@ export default {
 
   async fetch() {
     this.apiGroups = await this.$store.dispatch('cluster/findAll', { type: 'apigroup' });
+
+    if ( !!this.value.policy ) {
+      this.rules = this.value.policy.spec.rules[0];
+    }
+    if ( !!this.value.questions ) {
+      this.rules = this.value.questions.spec.rules[0];
+    }
   },
 
   data() {
@@ -36,7 +43,7 @@ export default {
 
     return {
       apiGroups: [],
-      rules:     this.value.policy?.spec?.rules[0],
+      rules:     null,
       operationOptions
     };
   },
