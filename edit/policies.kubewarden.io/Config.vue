@@ -1,8 +1,5 @@
 <script>
-import { KUBEWARDEN } from '@/config/types';
-import { _VIEW } from '@/config/query-params';
-import { typeOf } from '@/utils/sort';
-import CreateEditView from '@/mixins/create-edit-view';
+import { _CREATE, _VIEW } from '@/config/query-params';
 
 import Values from '@/edit/policies.kubewarden.io/Values';
 
@@ -22,12 +19,9 @@ export default {
 
   components: { Values },
 
-  mixins: [CreateEditView],
-
   fetch() {
     if ( this.value ) {
       this.chartValues = { policy: this.value, questions: { questions: [] } };
-      this.policyQuestions();
     }
   },
 
@@ -39,28 +33,19 @@ export default {
     return { chartType: this.value.type };
   },
 
-  methods: {
-    policyQuestions() {
-      // Add a field from policy chart to the questions object
-      if ( this.value?.spec?.settings ) {
-        for ( const [key, value] of Object.entries(this.value.spec.settings) ) {
-          const out = {
-            default:  value,
-            group:    'Settings',
-            label:    key,
-            type:     typeOf(value),
-            variable: `policy.spec.settings.${ key }`
-          };
-
-          // Why questions.questions you ask? It's because of allQuestions() in `@/components/questions.vue`
-          this.chartValues?.questions.questions.push(out);
-        }
+  computed: {
+    // if coming from the "View Yaml" page `this.mode` will display `create` - this is not legit.
+    legitMode() {
+      if ( this.mode === _CREATE ) {
+        return _VIEW;
       }
+
+      return this.mode;
     }
   }
 };
 </script>
 
 <template>
-  <Values :value="value" :chart-values="chartValues" :mode="realMode" />
+  <Values :value="value" :chart-values="chartValues" :mode="legitMode" />
 </template>

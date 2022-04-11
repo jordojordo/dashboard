@@ -29,9 +29,6 @@ export default {
     if ( !!this.value.policy ) {
       this.rules = this.value.policy.spec.rules[0];
     }
-    if ( !!this.value.questions ) {
-      this.rules = this.value.questions.spec.rules[0];
-    }
   },
 
   data() {

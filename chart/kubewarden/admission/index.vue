@@ -28,6 +28,10 @@ export default {
   },
 
   computed: {
+    hasSettings() {
+      return this.value.spec?.settings;
+    },
+
     targetNamespace() {
       if ( this.forceNamespace ) {
         return this.forceNamespace;
@@ -50,12 +54,14 @@ export default {
       <Rules v-model="chartValues" :mode="mode" />
     </Tab>
     <!-- Values as questions -->
-    <Questions
-      v-model="chartValues"
-      :mode="mode"
-      :source="chartValues"
-      tabbed="multiple"
-      :target-namespace="targetNamespace"
-    />
+    <Tab v-if="hasSettings" name="Settings" label="Settings" :weight="97">
+      <Questions
+        v-model="chartValues.policy.spec.settings"
+        :mode="mode"
+        :source="chartValues.policy.spec.settings"
+        tabbed="never"
+        :target-namespace="targetNamespace"
+      />
+    </Tab>
   </div>
 </template>

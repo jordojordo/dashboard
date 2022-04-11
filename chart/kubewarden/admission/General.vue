@@ -43,8 +43,6 @@ export default {
 
     if ( this.value.policy ) {
       policy = this.value.policy;
-    } else if ( !this.isCreate && this.value.questions ) {
-      policy = this.value.questions;
     } else {
       policy = this.value;
     }
