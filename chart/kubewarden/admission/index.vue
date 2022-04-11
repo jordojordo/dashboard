@@ -29,7 +29,7 @@ export default {
 
   computed: {
     hasSettings() {
-      return this.value.spec?.settings;
+      return !!this.value.policy?.spec?.settings;
     },
 
     targetNamespace() {
@@ -54,14 +54,16 @@ export default {
       <Rules v-model="chartValues" :mode="mode" />
     </Tab>
     <!-- Values as questions -->
-    <Tab v-if="hasSettings" name="Settings" label="Settings" :weight="97">
-      <Questions
-        v-model="chartValues.policy.spec.settings"
-        :mode="mode"
-        :source="chartValues.policy.spec.settings"
-        tabbed="never"
-        :target-namespace="targetNamespace"
-      />
-    </Tab>
+    <template v-if="hasSettings">
+      <Tab name="Settings" label="Settings" :weight="97">
+        <Questions
+          v-model="chartValues.policy.spec.settings"
+          :mode="mode"
+          :source="chartValues.policy.spec.settings"
+          tabbed="never"
+          :target-namespace="targetNamespace"
+        />
+      </Tab>
+    </template>
   </div>
 </template>
