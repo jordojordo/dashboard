@@ -2,7 +2,10 @@
 import cloneDeep from 'lodash/cloneDeep';
 import merge from 'lodash/merge';
 import { _CREATE } from '@/config/query-params';
+import { SCHEMA } from '@/config/types';
 import CreateEditView from '@/mixins/create-edit-view';
+import { createYaml } from '@/utils/create-yaml';
+import { clone } from '@/utils/object';
 
 import Loading from '@/components/Loading';
 import CruResource from '@/components/CruResource';
@@ -65,6 +68,16 @@ export default {
         this.errors.push(e);
       }
     },
+
+    generateYaml() {
+      const inStore = this.$store.getters['currentStore'](this.value);
+      const schemas = this.$store.getters[`${ inStore }/all`](SCHEMA);
+      const cloned = this.chartValues?.questions ? clone(this.chartValues.questions) : this.value;
+
+      const out = createYaml(schemas, this.value.type, cloned);
+
+      return out;
+    },
   }
 };
 </script>
@@ -75,6 +88,8 @@ export default {
     v-else
     :resource="value"
     :mode="realMode"
+    :done-route="doneRoute"
+    :generate-yaml="generateYaml"
     @finish="finish"
   >
     <Values :value="value" :chart-values="chartValues" :mode="mode" />

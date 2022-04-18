@@ -88,7 +88,7 @@ export default ({
       stepBasic:     {
         name:   'basics',
         label:  'Policies',
-        ready:  true,
+        ready:  false,
         weight: 30
       },
       stepValues: {
@@ -232,6 +232,7 @@ export default ({
       });
 
       this.policyQuestions();
+      this.stepBasic.ready = true;
       this.$refs.wizard.next();
     },
 
@@ -401,7 +402,7 @@ export default ({
       </template>
 
       <template #values>
-        <Values :value="value" :chart-values="chartValues" :yaml-values="yamlValues" :mode="mode" />
+        <Values :value="value" :chart-values="chartValues" :mode="mode" />
       </template>
     </Wizard>
   </div>

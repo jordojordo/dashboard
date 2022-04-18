@@ -1,5 +1,8 @@
 <script>
 import { _CREATE, _VIEW } from '@/config/query-params';
+import { SCHEMA } from '@/config/types';
+import { createYaml } from '@/utils/create-yaml';
+import { clone } from '@/utils/object';
 
 import ButtonGroup from '@/components/ButtonGroup';
 import ResourceCancelModal from '@/components/ResourceCancelModal';
@@ -34,10 +37,6 @@ export default {
       type:     Object,
       required: true
     },
-    yamlValues: {
-      type:     Object,
-      default:  null
-    },
     value: {
       type:     Object,
       required: true
@@ -60,6 +59,8 @@ export default {
     } catch (e) {
       console.error(`Unable to fetch Version: ${ e }`); // eslint-disable-line no-console
     }
+
+    this.generateYaml();
   },
 
   data() {
@@ -70,7 +71,7 @@ export default {
       showValuesComponent: false,
       valuesComponent:     null,
       preYamlOption:       VALUES_STATE.FORM,
-      yamlOption:          VALUES_STATE.YAML,
+      yamlOption:          VALUES_STATE.FORM,
     };
   },
 
@@ -100,6 +101,14 @@ export default {
   },
 
   methods: {
+    generateYaml() {
+      const inStore = this.$store.getters['currentStore'](this.value);
+      const schemas = this.$store.getters[`${ inStore }/all`](SCHEMA);
+      const cloned = this.chartValues?.policy ? clone(this.chartValues.policy) : this.value;
+
+      this.yamlValues = createYaml(schemas, this.value.type, cloned);
+    },
+
     async loadValuesComponent() {
       if ( this.$store.getters['catalog/haveComponent']('kubewarden/admission') ) {
         this.valuesComponent = this.$store.getters['catalog/importComponent']('kubewarden/admission');
