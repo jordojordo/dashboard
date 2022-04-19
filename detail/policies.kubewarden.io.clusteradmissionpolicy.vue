@@ -40,7 +40,7 @@ export default {
   async fetch() {
     const inStore = this.$store.getters['currentStore'](this.resource);
     const CLUSTER_PATH = `/k8s/clusters/${ this.currentCluster?.id }/api/v1/namespaces`;
-    const JAEGER_PROXY = `${ CLUSTER_PATH }/jaeger/services/http:all-in-one-query:16686/proxy/api/traces?service=kubewarden-policy-server&operation=validation&tags={"allowed"%3A"false"}`;
+    const JAEGER_PROXY = `${ CLUSTER_PATH }/jaeger/services/http:all-in-one-query:16686/proxy/api/traces?service=kubewarden-policy-server&operation=validation&tags={{"allowed"%3A"false"%2C"policy_id"%3A"clusterwide-${ this.currentCluster?.id }"}}`;
 
     try {
       if ( this.monitoringStatus.installed ) {
