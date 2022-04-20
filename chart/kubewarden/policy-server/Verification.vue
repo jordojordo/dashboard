@@ -43,6 +43,14 @@ export default {
     isView() {
       return this.mode === _VIEW;
     },
+
+    showInsecureSources() {
+      if ( this.isView && !this.value?.insecureSources ) {
+        return false;
+      }
+
+      return true;
+    }
   },
 };
 </script>
@@ -60,49 +68,52 @@ export default {
       </div>
     </div>
     <div class="spacer"></div>
-    <div class="row">
-      <div class="col span-12">
-        <ArrayListGrouped
-          :mode="mode"
-          add-label="Add Sources"
-        >
-          <template #default>
-            <div class="row">
-              <div class="col span-12">
-                <ArrayList
-                  key="insecureSources"
-                  v-model="value.insecureSources"
-                  title="Insecure Sources"
-                  value-placeholder="e.g. registry.dev.my-corp.com"
-                  add-label="Add Insecure Source"
-                  :mode="mode"
-                  protip="List of insecure URIs to policy repositories."
-                />
-              </div>
-            </div>
-            <div class="spacer"></div>
-            <div class="row">
-              <div class="col span-12">
-                <RadioGroup
-                  v-model="openYamlEditor"
-                  name="openYamlEditor"
-                  :options="[false, true]"
-                  :mode="mode"
-                  class="mb-10"
-                  label="Add Source Authorities"
-                  :labels="['No', 'Yes']"
-                  tooltip="Allows you to provide a specific certificate authority the host can be validated against."
-                />
-                <template v-if="openYamlEditor">
-                  <YamlEditor
-                    v-model="value.sourceAuthorities"
+
+    <template v-if="showInsecureSources">
+      <div class="row">
+        <div class="col span-12">
+          <ArrayListGrouped
+            :mode="mode"
+            add-label="Add Sources"
+          >
+            <template #default>
+              <div class="row">
+                <div class="col span-12">
+                  <ArrayList
+                    key="insecureSources"
+                    v-model="value.insecureSources"
+                    title="Insecure Sources"
+                    value-placeholder="e.g. registry.dev.my-corp.com"
+                    add-label="Add Insecure Source"
+                    :mode="mode"
+                    protip="List of insecure URIs to policy repositories."
                   />
-                </template>
+                </div>
               </div>
-            </div>
-          </template>
-        </ArrayListGrouped>
+              <div class="spacer"></div>
+              <div class="row">
+                <div class="col span-12">
+                  <RadioGroup
+                    v-model="openYamlEditor"
+                    name="openYamlEditor"
+                    :options="[false, true]"
+                    :mode="mode"
+                    class="mb-10"
+                    label="Add Source Authorities"
+                    :labels="['No', 'Yes']"
+                    tooltip="Allows you to provide a specific certificate authority the host can be validated against."
+                  />
+                  <template v-if="openYamlEditor">
+                    <YamlEditor
+                      v-model="value.sourceAuthorities"
+                    />
+                  </template>
+                </div>
+              </div>
+            </template>
+          </ArrayListGrouped>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
