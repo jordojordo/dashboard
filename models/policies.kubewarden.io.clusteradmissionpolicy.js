@@ -1,5 +1,5 @@
 import SteveModel from '@/plugins/steve/steve-class';
-// import { KUBEWARDEN } from '@/config/types';
+import { SERVICE } from '@/config/types';
 import { proxyUrlFromParts } from '@/models/service';
 
 // The uid in the proxy `r3Pw-107z` is setup in the configmap for the kubewarden dashboard
@@ -76,17 +76,25 @@ export default class ClusterAdmissionPolicy extends SteveModel {
     }
   }
 
-  async tracesList() {
-    const url = `/k8s/clusters/${ this.currentCluster }/api/v1/namespaces/jaeger/services/http:all-in-one-query:16686/proxy/api/traces?operation=/api/traces&service=jaeger-query`;
+  get jaegerQuery() {
+    return async() => {
+      try {
+        const services = await this.$dispatch('cluster/findAll', { type: SERVICE }, { root: true });
 
-    try {
-      const inStore = this.$store.getters['currentProduct'].inStore;
+        if ( services ) {
+          return services.find((s) => {
+            const found = s.metadata?.labels?.['app'] === 'jaeger' && s.metadata?.labels?.['app.kubernetes.io/component'] === 'service-query';
 
-      return await this.$store.dispatch(`${ inStore }/request`, { url });
-    } catch (e) {
-      console.error('Error fetching traces', e); // eslint-disable-line no-console
+            if ( found ) {
+              return s;
+            }
+          });
+        }
+      } catch (e) {
+        console.error(`Error fetching services: ${ e }`); // eslint-disable-line no-console
+      }
 
-      return e;
-    }
+      return null;
+    };
   }
 }

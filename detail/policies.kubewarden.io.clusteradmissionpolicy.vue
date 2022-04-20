@@ -1,7 +1,6 @@
 <script>
 import { mapGetters } from 'vuex';
 import { _CREATE } from '@/config/query-params';
-import { SERVICE } from '@/config/types';
 import { monitoringStatus } from '@/utils/monitoring';
 import { dashboardExists } from '@/utils/grafana';
 import CreateEditView from '@/mixins/create-edit-view';
@@ -39,8 +38,6 @@ export default {
 
   async fetch() {
     const inStore = this.$store.getters['currentStore'](this.resource);
-    const CLUSTER_PATH = `/k8s/clusters/${ this.currentCluster?.id }/api/v1/namespaces`;
-    const JAEGER_PROXY = `${ CLUSTER_PATH }/jaeger/services/http:all-in-one-query:16686/proxy/api/traces?service=kubewarden-policy-server&operation=validation&tags={{"allowed"%3A"false"%2C"policy_id"%3A"clusterwide-${ this.currentCluster?.id }"}}`;
 
     try {
       if ( this.monitoringStatus.installed ) {
@@ -50,11 +47,19 @@ export default {
       console.error(`Error fetching metrics status: ${ e }`); // eslint-disable-line no-console
     }
 
-    try {
-      this.jaegerService = await this.$store.dispatch('cluster/find', { type: SERVICE, id: 'jaeger/jaeger-operator-metrics' });
-      this.traces = await this.$store.dispatch(`${ inStore }/request`, { url: JAEGER_PROXY });
-    } catch (e) {
-      console.error(`Error fetching Jaeger service: ${ e }`); // eslint-disable-line no-console
+    this.jaegerService = await this.value.jaegerQuery();
+
+    if ( this.jaegerService ) {
+      try {
+        const CLUSTER_PATH = `/k8s/clusters/${ this.currentCluster?.id }/api/v1/namespaces`;
+        const TRACE_TAGS = `"allowed"%3A"false"%2C"policy_id"%3A"clusterwide-${ this.value.metadata?.name }"`;
+        const PROXY_PATH = `proxy/api/traces?service=kubewarden-policy-server&operation=validation&tags={${ TRACE_TAGS }}`;
+        const JAEGER_PATH = `${ CLUSTER_PATH }/${ this.jaegerService.metadata?.namespace }/services/http:${ this.jaegerService.metadata?.name }:16686/${ PROXY_PATH }`;
+
+        this.traces = await this.$store.dispatch(`${ inStore }/request`, { url: JAEGER_PATH });
+      } catch (e) {
+        console.error(`Error fetching Jaeger service: ${ e }`); // eslint-disable-line no-console
+      }
     }
   },
 

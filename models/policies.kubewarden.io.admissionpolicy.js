@@ -1,5 +1,5 @@
 import SteveModel from '@/plugins/steve/steve-class';
-// import { KUBEWARDEN } from '@/config/types';
+import { SERVICE } from '@/config/types';
 
 // The uid in the proxy `r3Pw-107z` is setup in the configmap for the kubewarden dashboard
 // It's the generic uid from the json here: https://grafana.com/grafana/dashboards/15314
@@ -51,16 +51,6 @@ export const OPERATION_MAP = {
 };
 
 export default class AdmissionPolicy extends SteveModel {
-  // get allPolicies() {
-  //   return async() => {
-  //     try {
-  //       return await this.$store.dispatch('cluster/findAll', { type: KUBEWARDEN.ADMISSION_POLICY }, { root: true });
-  //     } catch (e) {
-  //       console.error(`Error fetching policies: ${ e }`); // eslint-disable-line no-console
-  //     }
-  //   };
-  // }
-
   get detailPageHeaderBadgeOverride() {
     return this.status?.policyStatus;
   }
@@ -71,5 +61,27 @@ export default class AdmissionPolicy extends SteveModel {
     }
 
     return null;
+  }
+
+  get jaegerQuery() {
+    return async() => {
+      try {
+        const services = await this.$dispatch('cluster/findAll', { type: SERVICE }, { root: true });
+
+        if ( services ) {
+          return services.find((s) => {
+            const found = s.metadata?.labels?.['app'] === 'jaeger' && s.metadata?.labels?.['app.kubernetes.io/component'] === 'service-query';
+
+            if ( found ) {
+              return s;
+            }
+          });
+        }
+      } catch (e) {
+        console.error(`Error fetching services: ${ e }`); // eslint-disable-line no-console
+      }
+
+      return null;
+    };
   }
 }
