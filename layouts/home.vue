@@ -35,6 +35,9 @@ export default {
 
 <template>
   <div class="dashboard-root">
+    <div id="jordos-banner">
+      <h1>This is my test branch</h1>
+    </div>
     <FixedBanner :header="true" />
     <div class="dashboard-content">
       <Header :simple="true" />
@@ -42,6 +45,9 @@ export default {
       <main>
         <nuxt class="outlet" />
       </main>
+    </div>
+    <div id="jordo-footer">
+      <h6>My excellent footer</h6>
     </div>
     <FixedBanner :footer="true" />
     <GrowlManager />
