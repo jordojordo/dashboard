@@ -87,6 +87,10 @@ export default {
       return this.metricsService;
     },
 
+    hasRelationships() {
+      return !!this.value.metadata?.relationships;
+    },
+
     tracesRows() {
       const out = this.traces?.data?.map((trace) => {
         const span = trace.spans.find(s => s.operationName === 'validation');
@@ -122,7 +126,7 @@ export default {
     <div class="mb-20">
       <h3>{{ t('namespace.resources') }}</h3>
     </div>
-    <ResourceTabs v-model="value" :mode="mode">
+    <ResourceTabs v-model="value" :mode="mode" :need-related="hasRelationships">
       <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="2">
         <template #default="props">
           <DashboardMetrics
