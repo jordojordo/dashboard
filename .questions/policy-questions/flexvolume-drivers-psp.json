@@ -1,0 +1,10 @@
+[
+  {
+    "default": "",
+    "description": "Provides a list of allowed Flex Volume drivers.",
+    "group": "Settings",
+    "label": "Allowed flex volumes",
+    "type": "map",
+    "variable": "allowed_flex_volumes"
+  }
+]

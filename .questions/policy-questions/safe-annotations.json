@@ -1,0 +1,19 @@
+[
+  {
+    "default": "",
+    "description": "A list of annotations that cannot be used",
+    "group": "Settings",
+    "label": "Denied annotations",
+    "required": false,
+    "type": "array",
+    "variable": "denied_annotations"
+  },
+  {
+    "default": "",
+    "description": "Annotations that are validated with user-defined RegExp",
+    "group": "Settings",
+    "label": "Constrained annotations",
+    "type": "map",
+    "variable": "constrained_annotations"
+  }
+]

@@ -23,7 +23,7 @@
     ],
     "mutating": false,
     "settings": {
-      "allowed_flex_volumes": [""]
+      "allowed_flex_volumes": [{}]
     }
   }
 }

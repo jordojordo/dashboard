@@ -1,0 +1,43 @@
+[
+  {
+    "default": "RunAsAny",
+    "description": "Set which fsGroup is allowed in the pod security context.",
+    "group": "Settings",
+    "label": "Service Type",
+    "options": [
+      "MustRunAs",
+      "MayRunAs",
+      "RunAsAny"
+    ],
+    "required": false,
+    "type": "enum",
+    "variable": "rule"
+  },
+  {
+    "default": "",
+    "description": "Valid ranges for the fsGroup",
+    "group": "Settings",
+    "label": "Ranges",
+    "show_if": "rule=MustRunAs",
+    "type": "map",
+    "variable": "ranges",
+    "subquestions": [
+      {
+        "default": "1000",
+        "description": "Minimum range for fsgroup",
+        "group": "Settings",
+        "label": "min",
+        "type": "enum",
+        "variable": "min"
+      },
+      {
+        "default": "2000",
+        "description": "Maximum range for fsgroup",
+        "group": "Settings",
+        "label": "max",
+        "type": "enum",
+        "variable": "max"
+      }
+    ]
+  }
+]

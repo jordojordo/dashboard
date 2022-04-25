@@ -1,0 +1,56 @@
+[
+  {
+    "default": "",
+    "description": "",
+    "group": "Settings",
+    "label": "Must run as",
+    "type": "map",
+    "variable": "MustRunAs",
+    "subquestions": [
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "User",
+        "show_if": "RunAsAny=false",
+        "type": "string",
+        "variable": "user"
+      },
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "Role",
+        "show_if": "RunAsAny=false",
+        "type": "string",
+        "variable": "role"
+      },
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "Type",
+        "show_if": "RunAsAny=false",
+        "type": "string",
+        "variable": "type"
+      },
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "Level",
+        "show_if": "RunAsAny=false",
+        "type": "enum",
+        "variable": "level"
+      }
+    ]
+  },
+  {
+    "default": false,
+    "description": "Always accepts the request.",
+    "group": "Settings",
+    "label": "Run as any",
+    "type": "boolean",
+    "variable": "RunAsAny"
+  }
+]

@@ -1,0 +1,55 @@
+[
+  {
+    "default": false,
+    "description": "Allows the pod to set .spec.HostIPC to true.",
+    "group": "Settings",
+    "label": "Allow host IPC",
+    "required": false,
+    "type": "boolean",
+    "variable": "allow_host_ipc"
+  },
+  {
+    "default": false,
+    "description": "Allows the pod to set .spec.HostNetwork to true.",
+    "group": "Settings",
+    "label": "Allow host network",
+    "required": false,
+    "type": "boolean",
+    "variable": "allow_host_network"
+  },
+  {
+    "default": false,
+    "description": "Allows the pod to set .spec.HostPID to true.",
+    "group": "Settings",
+    "label": "Allow host PID",
+    "required": false,
+    "type": "boolean",
+    "variable": "allow_host_pid"
+  },
+  {
+    "default": "",
+    "description": "A range of ports to allow",
+    "group": "Settings",
+    "label": "Allow host ports",
+    "type": "map",
+    "variable": "allow_host_ports",
+    "subquestions": [
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "min",
+        "type": "enum",
+        "variable": "min"
+      },
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "max",
+        "type": "enum",
+        "variable": "max"
+      }
+    ]
+  }
+]

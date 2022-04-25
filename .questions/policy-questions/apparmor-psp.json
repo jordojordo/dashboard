@@ -1,0 +1,11 @@
+[
+  {
+    "default": "",
+    "description": "List of allowed profiles",
+    "group": "Settings",
+    "label": "Allowed profiles",
+    "required": false,
+    "type": "array",
+    "variable": "allowed_profiles"
+  }
+]

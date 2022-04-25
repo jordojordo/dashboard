@@ -1,0 +1,176 @@
+[
+  {
+    "default": "",
+    "description": "Controls which user ID the containers are run with.",
+    "group": "Settings",
+    "label": "Run as user",
+    "type": "map",
+    "variable": "run_as_user",
+    "subquestions": [
+      {
+        "default": "",
+        "description": "Defines the strategy used by the policy to enforce users and groups used in containers.",
+        "group": "Settings",
+        "label": "Rule",
+        "options": [
+          "MustRunAs",
+          "MustRunAsNonRoot",
+          "RunAsAny"
+        ],
+        "type": "enum",
+        "variable": "rule"
+      },
+      {
+        "default": false,
+        "description": "",
+        "group": "Settings",
+        "label": "Overwrite",
+        "show_if": "rule=MustRunAs",
+        "type": "boolean",
+        "variable": "overwrite"
+      },
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "Ranges",
+        "type": "map",
+        "variable": "ranges",
+        "subquestions": [
+          {
+            "default": "",
+            "description": "",
+            "group": "Settings",
+            "label": "min",
+            "type": "enum",
+            "variable": "min"
+          },
+          {
+            "default": "",
+            "description": "",
+            "group": "Settings",
+            "label": "max",
+            "type": "enum",
+            "variable": "max"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "default": "",
+    "description": "Controls which primary group ID the containers are run with.",
+    "group": "Settings",
+    "label": "Run as group",
+    "type": "map",
+    "variable": "run_as_group",
+    "subquestions": [
+      {
+        "default": "",
+        "description": "Defines the strategy used by the policy to enforce users and groups used in containers.",
+        "group": "Settings",
+        "label": "Rule",
+        "options": [
+          "MustRunAs",
+          "MustRunAsNonRoot",
+          "RunAsAny"
+        ],
+        "type": "enum",
+        "variable": "rule"
+      },
+      {
+        "default": false,
+        "description": "",
+        "group": "Settings",
+        "label": "Overwrite",
+        "show_if": "rule=MustRunAs",
+        "type": "boolean",
+        "variable": "overwrite"
+      },
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "Ranges",
+        "type": "map",
+        "variable": "ranges",
+        "subquestions": [
+          {
+            "default": "",
+            "description": "",
+            "group": "Settings",
+            "label": "min",
+            "type": "enum",
+            "variable": "min"
+          },
+          {
+            "default": "",
+            "description": "",
+            "group": "Settings",
+            "label": "max",
+            "type": "enum",
+            "variable": "max"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "default": "",
+    "description": "Controls which group IDs containers add.",
+    "group": "Settings",
+    "label": "Supplemental groups",
+    "type": "map",
+    "variable": "supplemental_groups",
+    "subquestions": [
+      {
+        "default": "",
+        "description": "Defines the strategy used by the policy to enforce users and groups used in containers.",
+        "group": "Settings",
+        "label": "Rule",
+        "options": [
+          "MustRunAs",
+          "MustRunAsNonRoot",
+          "RunAsAny"
+        ],
+        "type": "enum",
+        "variable": "rule"
+      },
+      {
+        "default": false,
+        "description": "",
+        "group": "Settings",
+        "label": "Overwrite",
+        "show_if": "rule=MustRunAs",
+        "type": "boolean",
+        "variable": "overwrite"
+      },
+      {
+        "default": "",
+        "description": "",
+        "group": "Settings",
+        "label": "Ranges",
+        "type": "map",
+        "variable": "ranges",
+        "subquestions": [
+          {
+            "default": "",
+            "description": "",
+            "group": "Settings",
+            "label": "min",
+            "type": "enum",
+            "variable": "min"
+          },
+          {
+            "default": "",
+            "description": "",
+            "group": "Settings",
+            "label": "max",
+            "type": "enum",
+            "variable": "max"
+          }
+        ]
+      }
+    ]
+  }
+]

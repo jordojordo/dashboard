@@ -1,0 +1,11 @@
+[
+  {
+    "default": true,
+    "description": "Used to default to disallow, while still permitting pods to request allowPrivilegeEscalation explicitly.",
+    "group": "Settings",
+    "label": "Allow privilege escalation",
+    "required": false,
+    "type": "boolean",
+    "variable": "default_allow_privilege_escalation"
+  }
+]
