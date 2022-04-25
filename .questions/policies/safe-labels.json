@@ -22,6 +22,10 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "denied_labels": [""],
+      "mandatory_labels": [""],
+      "constrained_labels": [{}]
+    }
   }
 }

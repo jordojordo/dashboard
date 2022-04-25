@@ -23,7 +23,7 @@
     ],
     "mutating": false,
     "settings": {
-      "allowed_profiles": []
+      "allowed_profiles": [""]
     }
   }
 }

@@ -22,6 +22,37 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "run_as_user": {
+        "rule": "",
+        "overwrite": false,
+        "ranges": [
+          {
+            "min": 0,
+            "max": 0
+          }
+        ]
+      },
+      "run_as_group": {
+        "rule": "",
+        "overwrite": false,
+        "ranges": [
+          {
+            "min": 0,
+            "max": 0
+          }
+        ]
+      },
+      "supplemental_groups": {
+        "rule": "",
+        "overwrite": false,
+        "ranges": [
+          {
+            "min": 0,
+            "max": 0
+          }
+        ]
+      }
+    }
   }
 }

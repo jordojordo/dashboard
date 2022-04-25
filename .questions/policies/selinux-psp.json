@@ -22,6 +22,9 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "MustRunAs": [{}],
+      "RunAsAny": false
+    }
   }
 }

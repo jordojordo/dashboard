@@ -22,6 +22,16 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "allow_host_ipc": false,
+      "allow_host_network": false,
+      "allow_host_pid": false,
+      "allow_host_ports": [
+        {
+          "min": 0,
+          "max": 0
+        }
+      ]
+    }
   }
 }

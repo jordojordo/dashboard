@@ -22,6 +22,9 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "forbiddenSysctls": [""],
+      "allowedUnsafeSysctls": [""]
+    }
   }
 }

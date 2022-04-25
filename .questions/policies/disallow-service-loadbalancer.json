@@ -21,7 +21,6 @@
         ]
       }
     ],
-    "mutating": false,
-    "settings": {}
+    "mutating": false
   }
 }

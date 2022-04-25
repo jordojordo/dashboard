@@ -23,7 +23,13 @@
     ],
     "mutating": false,
     "settings": {
-      "rule": "RunAsAny"
+      "rule": "",
+      "ranges": [
+        {
+          "min": 0,
+          "max": 0
+        }
+      ]
     }
   }
 }

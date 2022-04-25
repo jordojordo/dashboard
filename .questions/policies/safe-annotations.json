@@ -22,6 +22,9 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "denied_annotations": [""],
+      "constrained_annotations": [{}]
+    }
   }
 }

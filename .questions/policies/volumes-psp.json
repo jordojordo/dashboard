@@ -22,6 +22,8 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "allowedTypes": [""]
+    }
   }
 }

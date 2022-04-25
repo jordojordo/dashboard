@@ -22,6 +22,10 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "allowed_profiles": [""],
+      "profile_types": [""],
+      "localhost_profiles": [""]
+    }
   }
 }

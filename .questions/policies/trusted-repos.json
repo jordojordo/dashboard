@@ -22,6 +22,18 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "registries": {
+        "allow": [""],
+        "reject": [""]
+      },
+      "tags": {
+        "reject": [""]
+      },
+      "images": {
+        "allow": [""],
+        "reject": [""]
+      }
+    }
   }
 }

@@ -22,6 +22,10 @@
       }
     ],
     "mutating": false,
-    "settings": {}
+    "settings": {
+      "allowed_capabilities": [""],
+      "required_drop_capabilities": [""],
+      "default_add_capabilities": [""]
+    }
   }
 }
