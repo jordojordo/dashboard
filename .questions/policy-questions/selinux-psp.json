@@ -35,12 +35,12 @@
         "variable": "type"
       },
       {
-        "default": "",
+        "default": 0,
         "description": "",
         "group": "Settings",
         "label": "Level",
         "show_if": "RunAsAny=false",
-        "type": "enum",
+        "type": "int",
         "variable": "level"
       }
     ]

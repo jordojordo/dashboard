@@ -23,19 +23,19 @@
     "variable": "ranges",
     "subquestions": [
       {
-        "default": "1000",
+        "default": 1000,
         "description": "Minimum range for fsgroup",
         "group": "Settings",
         "label": "min",
-        "type": "enum",
+        "type": "int",
         "variable": "min"
       },
       {
-        "default": "2000",
+        "default": 2000,
         "description": "Maximum range for fsgroup",
         "group": "Settings",
         "label": "max",
-        "type": "enum",
+        "type": "int",
         "variable": "max"
       }
     ]

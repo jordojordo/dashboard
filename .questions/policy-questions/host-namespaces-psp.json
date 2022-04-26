@@ -35,19 +35,19 @@
     "variable": "allow_host_ports",
     "subquestions": [
       {
-        "default": "",
+        "default": 0,
         "description": "",
         "group": "Settings",
         "label": "min",
-        "type": "enum",
+        "type": "int",
         "variable": "min"
       },
       {
-        "default": "",
+        "default": 0,
         "description": "",
         "group": "Settings",
         "label": "max",
-        "type": "enum",
+        "type": "int",
         "variable": "max"
       }
     ]
