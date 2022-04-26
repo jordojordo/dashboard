@@ -59,7 +59,7 @@ export default {
         <Questions
           v-model="chartValues.policy.spec.settings"
           :mode="mode"
-          :source="chartValues.policy.spec.settings"
+          :source="chartValues"
           tabbed="never"
           :target-namespace="targetNamespace"
         />

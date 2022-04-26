@@ -12,7 +12,7 @@ import {
 import { KUBEWARDEN } from '@/config/types';
 import { saferDump } from '@/utils/create-yaml';
 import { ensureRegex } from '@/utils/string';
-import { sortBy, typeOf } from '@/utils/sort';
+import { sortBy } from '@/utils/sort';
 
 import ButtonGroup from '@/components/ButtonGroup';
 import LabeledSelect from '@/components/form/LabeledSelect';
@@ -279,24 +279,19 @@ export default ({
     },
 
     policyQuestions() {
-      const match = require(`@/.questions/policies/${ this.type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '') }.json`);
+      const shortType = this.type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '');
+      const match = require(`@/.questions/policies/${ shortType }.json`);
 
       if ( match ) {
         this.$set(this.chartValues, 'policy', match);
       }
 
-      // Add a field from policy chart to the questions object
+      // Spoofing the questions object from hard-typed questions json for each policy
       if ( match?.spec?.settings ) {
-        for ( const [key, value] of Object.entries(match.spec.settings) ) {
-          const out = {
-            default:  value,
-            group:    'Settings',
-            label:    key,
-            type:     typeOf(value),
-            variable: `policy.spec.settings.${ key }`
-          };
+        const questionsMatch = require(`@/.questions/policy-questions/${ shortType }.json`);
 
-          this.chartValues?.questions?.questions?.push(out);
+        if ( questionsMatch ) {
+          this.$set(this.chartValues.questions, 'questions', questionsMatch);
         }
       }
     }

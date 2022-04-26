@@ -8,8 +8,8 @@ export default {
 
   props: {
     mode: {
-      type:    String,
-      default: _VIEW
+      type:     String,
+      default:  _VIEW
     },
     value: {
       type:     Object,
@@ -21,7 +21,10 @@ export default {
 
   fetch() {
     if ( this.value ) {
-      this.chartValues = { policy: this.value, questions: { questions: [] } };
+      this.chartValues = {
+        policy:    this.value,
+        questions: { questions: this.value.policyQuestions }
+      };
     }
   },
 

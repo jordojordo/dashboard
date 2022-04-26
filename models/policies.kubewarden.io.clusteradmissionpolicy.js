@@ -1,5 +1,5 @@
 import SteveModel from '@/plugins/steve/steve-class';
-import { SERVICE } from '@/config/types';
+import { KUBEWARDEN, SERVICE } from '@/config/types';
 import { proxyUrlFromParts } from '@/models/service';
 
 // The uid in the proxy `r3Pw-107z` is setup in the configmap for the kubewarden dashboard
@@ -96,5 +96,30 @@ export default class ClusterAdmissionPolicy extends SteveModel {
 
       return null;
     };
+  }
+
+  get policyTypes() {
+    const out = Object.values(KUBEWARDEN.SPOOFED);
+
+    return out;
+  }
+
+  get policyQuestions() {
+    const module = this.spec.module;
+
+    const found = this.policyTypes.find((t) => {
+      if ( module.includes( t.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '') ) ) {
+        return t;
+      }
+    });
+
+    // Spoofing the questions object from hard-typed questions json for each policy
+    if ( found ) {
+      const short = found.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '');
+
+      return require(`@/.questions/policy-questions/${ short }.json`);
+    }
+
+    return null;
   }
 }
