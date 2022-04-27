@@ -116,6 +116,10 @@ export default {
   methods: {
     color(op) {
       return OPERATION_MAP[op];
+    },
+
+    capitalizeMessage(m) {
+      return m.charAt(0).toUpperCase() + m.slice(1);
     }
   }
 };
@@ -170,7 +174,7 @@ export default {
                       Response Message
                     </div>
                     <span class="text-warning">
-                      {{ row.response_message }}
+                      {{ capitalizeMessage(row.response_message) }}
                     </span>
                   </section>
                   <section class="col">
