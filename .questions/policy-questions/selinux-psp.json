@@ -1,47 +1,42 @@
 [
   {
-    "default": "",
-    "description": "",
     "group": "Settings",
     "label": "Must run as",
+    "target": false,
     "type": "map",
     "variable": "MustRunAs",
     "subquestions": [
       {
         "default": "",
-        "description": "",
         "group": "Settings",
         "label": "User",
         "show_if": "RunAsAny=false",
         "type": "string",
-        "variable": "user"
+        "variable": "MustRunAs.user"
       },
       {
         "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Role",
         "show_if": "RunAsAny=false",
         "type": "string",
-        "variable": "role"
+        "variable": "MustRunAs.role"
       },
       {
         "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Type",
         "show_if": "RunAsAny=false",
         "type": "string",
-        "variable": "type"
+        "variable": "MustRunAs.type"
       },
       {
         "default": 0,
-        "description": "",
         "group": "Settings",
         "label": "Level",
         "show_if": "RunAsAny=false",
         "type": "int",
-        "variable": "level"
+        "variable": "MustRunAs.level"
       }
     ]
   },

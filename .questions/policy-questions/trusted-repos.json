@@ -1,71 +1,63 @@
 [
   {
-    "default": "",
-    "description": "",
     "group": "Settings",
     "label": "Registries",
+    "target": false,
     "type": "map",
     "variable": "registries",
     "subquestions": [
       {
         "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Allow",
         "type": "array",
-        "variable": "allow"
+        "variable": "registries.allow"
       },
       {
         "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Reject",
         "type": "array",
-        "variable": "reject"
+        "variable": "registries.reject"
       }
     ]
   },
   {
-    "default": "",
-    "description": "",
     "group": "Settings",
     "label": "Tags",
+    "target": false,
     "type": "map",
     "variable": "tags",
     "subquestions": [
       {
         "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Reject",
         "type": "array",
-        "variable": "reject"
+        "variable": "tags.reject"
       }
     ]
   },
   {
-    "default": "",
-    "description": "",
     "group": "Settings",
     "label": "Images",
+    "target": false,
     "type": "map",
     "variable": "images",
     "subquestions": [
       {
         "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Allow",
         "type": "array",
-        "variable": "allow"
+        "variable": "images.allow"
       },
       {
         "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Reject",
         "type": "array",
-        "variable": "reject"
+        "variable": "images.reject"
       }
     ]
   }

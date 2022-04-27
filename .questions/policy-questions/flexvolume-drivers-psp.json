@@ -4,6 +4,7 @@
     "description": "Provides a list of allowed Flex Volume drivers.",
     "group": "Settings",
     "label": "Allowed flex volumes",
+    "target": true,
     "type": "map",
     "variable": "allowed_flex_volumes"
   }

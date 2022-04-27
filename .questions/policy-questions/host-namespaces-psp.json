@@ -27,10 +27,10 @@
     "variable": "allow_host_pid"
   },
   {
-    "default": "",
     "description": "A range of ports to allow",
     "group": "Settings",
     "label": "Allow host ports",
+    "target": false,
     "type": "map",
     "variable": "allow_host_ports",
     "subquestions": [
@@ -40,7 +40,7 @@
         "group": "Settings",
         "label": "min",
         "type": "int",
-        "variable": "min"
+        "variable": "allow_host_ports.min"
       },
       {
         "default": 0,
@@ -48,7 +48,7 @@
         "group": "Settings",
         "label": "max",
         "type": "int",
-        "variable": "max"
+        "variable": "allow_host_ports.max"
       }
     ]
   }

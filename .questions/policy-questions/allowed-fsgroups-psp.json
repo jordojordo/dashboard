@@ -14,11 +14,11 @@
     "variable": "rule"
   },
   {
-    "default": "",
     "description": "Valid ranges for the fsGroup",
     "group": "Settings",
     "label": "Ranges",
     "show_if": "rule=MustRunAs",
+    "target": false,
     "type": "map",
     "variable": "ranges",
     "subquestions": [
@@ -28,7 +28,7 @@
         "group": "Settings",
         "label": "min",
         "type": "int",
-        "variable": "min"
+        "variable": "ranges.min"
       },
       {
         "default": 2000,
@@ -36,7 +36,7 @@
         "group": "Settings",
         "label": "max",
         "type": "int",
-        "variable": "max"
+        "variable": "ranges.max"
       }
     ]
   }

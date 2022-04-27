@@ -1,9 +1,9 @@
 [
   {
-    "default": "",
     "description": "Controls which user ID the containers are run with.",
     "group": "Settings",
     "label": "Run as user",
+    "target": false,
     "type": "map",
     "variable": "run_as_user",
     "subquestions": [
@@ -22,49 +22,45 @@
       },
       {
         "default": false,
-        "description": "",
         "group": "Settings",
         "label": "Overwrite",
         "show_if": "run_as_user.rule=MustRunAs",
         "type": "boolean",
-        "variable": "overwrite"
+        "variable": "run_as_user.overwrite"
       },
       {
-        "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Ranges",
         "show_if": "run_as_user.rule=MustRunAs",
+        "target": false,
         "type": "map",
-        "variable": "ranges",
+        "variable": "run_as_user.ranges",
         "subquestions": [
           {
-            "default": "",
-            "description": "",
+            "default": 0,
             "group": "Settings",
             "label": "min",
             "show_if": "run_as_user.rule=MustRunAs",
             "type": "int",
-            "variable": "min"
+            "variable": "run_as_user.ranges.min"
           },
           {
-            "default": "",
-            "description": "",
+            "default": 0,
             "group": "Settings",
             "label": "max",
             "show_if": "run_as_user.rule=MustRunAs",
             "type": "int",
-            "variable": "max"
+            "variable": "run_as_user.ranges.max"
           }
         ]
       }
     ]
   },
   {
-    "default": "",
     "description": "Controls which primary group ID the containers are run with.",
     "group": "Settings",
     "label": "Run as group",
+    "target": false,
     "type": "map",
     "variable": "run_as_group",
     "subquestions": [
@@ -79,53 +75,49 @@
           "RunAsAny"
         ],
         "type": "enum",
-        "variable": "rule"
+        "variable": "run_as_group.rule"
       },
       {
         "default": false,
-        "description": "",
         "group": "Settings",
         "label": "Overwrite",
         "show_if": "run_as_group.rule=MustRunAs",
         "type": "boolean",
-        "variable": "overwrite"
+        "variable": "run_as_group.overwrite"
       },
       {
-        "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Ranges",
         "show_if": "run_as_group.rule=MustRunAs",
+        "target": false,
         "type": "map",
-        "variable": "ranges",
+        "variable": "run_as_group.ranges",
         "subquestions": [
           {
-            "default": "",
-            "description": "",
+            "default": 0,
             "group": "Settings",
             "label": "min",
             "show_if": "run_as_group.rule=MustRunAs",
             "type": "int",
-            "variable": "min"
+            "variable": "run_as_group.ranges.min"
           },
           {
-            "default": "",
-            "description": "",
+            "default": 0,
             "group": "Settings",
             "label": "max",
             "show_if": "run_as_group.rule=MustRunAs",
             "type": "int",
-            "variable": "max"
+            "variable": "run_as_group.ranges.max"
           }
         ]
       }
     ]
   },
   {
-    "default": "",
     "description": "Controls which group IDs containers add.",
     "group": "Settings",
     "label": "Supplemental groups",
+    "target": false,
     "type": "map",
     "variable": "supplemental_groups",
     "subquestions": [
@@ -140,43 +132,39 @@
           "RunAsAny"
         ],
         "type": "enum",
-        "variable": "rule"
+        "variable": "supplemental_groups.rule"
       },
       {
         "default": false,
-        "description": "",
         "group": "Settings",
         "label": "Overwrite",
         "show_if": "supplemental_groups.rule=MustRunAs",
         "type": "boolean",
-        "variable": "overwrite"
+        "variable": "supplemental_groups.overwrite"
       },
       {
-        "default": "",
-        "description": "",
         "group": "Settings",
         "label": "Ranges",
         "show_if": "supplemental_groups.rule=MustRunAs",
+        "target": false,
         "type": "map",
-        "variable": "ranges",
+        "variable": "supplemental_groups.ranges",
         "subquestions": [
           {
-            "default": "",
-            "description": "",
+            "default": 0,
             "group": "Settings",
             "label": "min",
             "show_if": "supplemental_groups.rule=MustRunAs",
             "type": "int",
-            "variable": "min"
+            "variable": "supplemental_groups.ranges.min"
           },
           {
-            "default": "",
-            "description": "",
+            "default": 0,
             "group": "Settings",
             "label": "max",
             "show_if": "supplemental_groups.rule=MustRunAs",
             "type": "int",
-            "variable": "max"
+            "variable": "supplemental_groups.ranges.max"
           }
         ]
       }

@@ -18,11 +18,11 @@
     "variable": "mandatory_labels"
   },
   {
-    "default": "",
     "description": "Annotations that are validated with user-defined RegExp",
     "group": "Settings",
     "label": "Constrained labels",
-    "type": "map",
+    "target": true,
+    "type": "map[",
     "variable": "constrained_labels"
   }
 ]
