@@ -340,7 +340,6 @@ export default ({
               placement="bottom"
               class="filter__category"
               label="label"
-              style="min-width: 200px;"
               :reduce="opt => opt.value"
             >
               <template #option="opt">
@@ -441,6 +440,11 @@ export default ({
     }
     & > *:last-child {
       margin-right: 0;
+    }
+
+    &__category {
+      min-width: 200px;
+      height: unset;
     }
   }
 
