@@ -287,7 +287,7 @@ export default ({
       }
 
       // Spoofing the questions object from hard-typed questions json for each policy
-      if ( match?.spec?.settings ) {
+      if ( match?.spec?.settings && !isEmpty(match.spec.settings) ) {
         const questionsMatch = require(`@/.questions/policy-questions/${ shortType }.json`);
 
         if ( questionsMatch ) {

@@ -1,4 +1,5 @@
 <script>
+import isEmpty from 'lodash/isEmpty';
 import { _CREATE } from '@/config/query-params';
 
 import General from '@/chart/kubewarden/admission/General';
@@ -29,7 +30,7 @@ export default {
 
   computed: {
     hasSettings() {
-      return !!this.value.policy?.spec?.settings;
+      return !!this.value.policy?.spec?.settings && !isEmpty(this.value.policy.spec.settings);
     },
 
     targetNamespace() {
