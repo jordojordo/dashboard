@@ -59,6 +59,15 @@ export default {
       return this.chartType === KUBEWARDEN.CLUSTER_ADMISSION_POLICY;
     },
 
+    modeDisabled() {
+      // Kubewarden doesn't allow switching a policy from 'protect' to 'monitor'
+      if ( !this.isCreate ) {
+        return this.policy.spec.mode === 'protect';
+      }
+
+      return false;
+    },
+
     policyServerOptions() {
       if ( this.policyServers.length > 0 ) {
         const out = [];
@@ -118,6 +127,18 @@ export default {
           label="Mutating"
           :labels="['No', 'Yes']"
           tooltip="A mutating policy will rebuild the requests with definied values that are conformant with the policy definition."
+        />
+      </div>
+      <div class="col span-6">
+        <RadioGroup
+          v-model="policy.spec.mode"
+          name="mode"
+          :disabled="modeDisabled"
+          :options="['monitor', 'protect']"
+          :mode="mode"
+          label="Mode"
+          :labels="['Monitor', 'Protect']"
+          tooltip="The monitor mode is a way to deploy policies to the cluster in a way that all requests that go through the policy will be accepted, as if the policy didn't exist. Defaults to 'Protect'."
         />
       </div>
     </div>
