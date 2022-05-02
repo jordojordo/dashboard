@@ -1,11 +1,11 @@
 [
   {
-    "default": "",
-    "description": "Provides a list of allowed Flex Volume drivers.",
+    "default": [],
+    "description": "Provides a list of allowed Flex Volume drivers. (e.g. `driver: my-flex-volume-driver`)",
     "group": "Settings",
     "label": "Allowed flex volumes",
     "target": true,
-    "type": "map",
+    "type": "map[",
     "variable": "allowed_flex_volumes"
   }
 ]

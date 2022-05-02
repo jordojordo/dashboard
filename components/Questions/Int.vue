@@ -6,17 +6,7 @@ import Question from './Question';
 
 export default {
   components: { LabeledInput },
-  mixins:     [Question],
-
-  computed: {
-    inputType() {
-      if ( ['text', 'password', 'multiline'].includes(this.question.type) ) {
-        return this.question.type;
-      }
-
-      return 'text';
-    }
-  }
+  mixins:     [Question]
 };
 </script>
 
@@ -24,20 +14,16 @@ export default {
   <div class="row">
     <div class="col span-6">
       <LabeledInput
-        v-if="showInput"
+        type="text"
         :mode="mode"
-        :type="inputType"
         :label="displayLabel"
         :placeholder="question.default"
         :required="question.required"
         :value="value"
         :disabled="disabled"
         :tooltip="question.tooltip"
-        @input="$emit('input', $event)"
+        @input="val = parseInt($event, 10); if ( !isNaN(val) ) { $emit('input', val) }"
       />
-      <h4 v-else class="mt-20">
-        {{ question.label }}
-      </h4>
     </div>
     <div v-if="showDescription" class="col span-6 mt-10">
       {{ displayDescription }}

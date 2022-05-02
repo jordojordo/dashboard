@@ -1,5 +1,6 @@
 [
   {
+    "default": [],
     "group": "Settings",
     "label": "Must run as",
     "target": false,
@@ -42,7 +43,7 @@
   },
   {
     "default": false,
-    "description": "Always accepts the request.",
+    "tooltip": "Always accepts the request.",
     "group": "Settings",
     "label": "Run as any",
     "type": "boolean",

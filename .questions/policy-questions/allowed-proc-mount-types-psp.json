@@ -1,7 +1,7 @@
 [
   {
     "default": true,
-    "description": "Allows the containers, init containers, or ephemeral containers within a pod to set .spec.securityContext.procMount to Unmasked",
+    "tooltip": "Allows the containers, init containers, or ephemeral containers within a pod to set .spec.securityContext.procMount to Unmasked",
     "group": "Settings",
     "label": "Allow unmasked proc mount type",
     "required": false,

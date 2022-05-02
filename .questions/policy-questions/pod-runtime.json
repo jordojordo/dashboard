@@ -1,16 +1,16 @@
 [
   {
-    "default": "",
+    "default": [],
     "description": "Give the explicit request to use a specific runtime.",
     "group": "Settings",
     "label": "Reserved Runtimes",
     "required": false,
-    "type": "array",
+    "type": "array[",
     "variable": "reservedRuntimes"
   },
   {
     "default": "",
-    "description": "Replace a non-valid runtime with a fall-back.",
+    "tooltip": "Replace a non-valid runtime with a fall-back.",
     "group": "Settings",
     "label": "Fallback runtime",
     "required": false,
@@ -19,7 +19,7 @@
   },
   {
     "default": true,
-    "description": "Prevent the usage of the default runtime.",
+    "tooltip": "Prevent the usage of the default runtime.",
     "group": "Settings",
     "label": "Default runtime reserved",
     "required": false,

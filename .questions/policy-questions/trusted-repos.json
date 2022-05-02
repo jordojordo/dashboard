@@ -1,5 +1,6 @@
 [
   {
+    "default": [],
     "group": "Settings",
     "label": "Registries",
     "target": false,
@@ -7,22 +8,23 @@
     "variable": "registries",
     "subquestions": [
       {
-        "default": "",
+        "default": [],
         "group": "Settings",
         "label": "Allow",
-        "type": "array",
+        "type": "array[",
         "variable": "registries.allow"
       },
       {
-        "default": "",
+        "default": [],
         "group": "Settings",
         "label": "Reject",
-        "type": "array",
+        "type": "array[",
         "variable": "registries.reject"
       }
     ]
   },
   {
+    "default": [],
     "group": "Settings",
     "label": "Tags",
     "target": false,
@@ -30,15 +32,16 @@
     "variable": "tags",
     "subquestions": [
       {
-        "default": "",
+        "default": [],
         "group": "Settings",
         "label": "Reject",
-        "type": "array",
+        "type": "array[",
         "variable": "tags.reject"
       }
     ]
   },
   {
+    "default": [],
     "group": "Settings",
     "label": "Images",
     "target": false,
@@ -46,17 +49,17 @@
     "variable": "images",
     "subquestions": [
       {
-        "default": "",
+        "default": [],
         "group": "Settings",
         "label": "Allow",
-        "type": "array",
+        "type": "array[",
         "variable": "images.allow"
       },
       {
-        "default": "",
+        "default": [],
         "group": "Settings",
         "label": "Reject",
-        "type": "array",
+        "type": "array[",
         "variable": "images.reject"
       }
     ]

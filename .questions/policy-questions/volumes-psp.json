@@ -1,11 +1,11 @@
 [
   {
-    "default": "",
+    "default": [],
     "description": "A list of the allowed volume types",
     "group": "Settings",
     "label": "Allowed types",
     "required": false,
-    "type": "array",
+    "type": "array[",
     "variable": "allowedTypes"
   }
 ]

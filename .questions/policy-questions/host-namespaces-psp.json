@@ -1,7 +1,7 @@
 [
   {
     "default": false,
-    "description": "Allows the pod to set .spec.HostIPC to true.",
+    "tooltip": "Allows the pod to set .spec.HostIPC to true.",
     "group": "Settings",
     "label": "Allow host IPC",
     "required": false,
@@ -10,7 +10,7 @@
   },
   {
     "default": false,
-    "description": "Allows the pod to set .spec.HostNetwork to true.",
+    "tooltip": "Allows the pod to set .spec.HostNetwork to true.",
     "group": "Settings",
     "label": "Allow host network",
     "required": false,
@@ -19,7 +19,7 @@
   },
   {
     "default": false,
-    "description": "Allows the pod to set .spec.HostPID to true.",
+    "tooltip": "Allows the pod to set .spec.HostPID to true.",
     "group": "Settings",
     "label": "Allow host PID",
     "required": false,
@@ -27,7 +27,8 @@
     "variable": "allow_host_pid"
   },
   {
-    "description": "A range of ports to allow",
+    "default": [],
+    "tooltip": "A range of ports to allow",
     "group": "Settings",
     "label": "Allow host ports",
     "target": false,
@@ -36,7 +37,7 @@
     "subquestions": [
       {
         "default": 0,
-        "description": "",
+        "tooltip": "",
         "group": "Settings",
         "label": "min",
         "type": "int",
@@ -44,7 +45,7 @@
       },
       {
         "default": 0,
-        "description": "",
+        "tooltip": "",
         "group": "Settings",
         "label": "max",
         "type": "int",

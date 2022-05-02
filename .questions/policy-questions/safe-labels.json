@@ -1,24 +1,25 @@
 [
   {
-    "default": "",
+    "default": [],
     "description": "A list of labels that cannot be used",
     "group": "Settings",
     "label": "Denied labels",
     "required": false,
-    "type": "array",
+    "type": "array[",
     "variable": "denied_labels"
   },
   {
-    "default": "",
+    "default": [],
     "description": "A list of labels that must be defined",
     "group": "Settings",
     "label": "Mandatory labels",
     "required": false,
-    "type": "array",
+    "type": "array[",
     "variable": "mandatory_labels"
   },
   {
-    "description": "Annotations that are validated with user-defined RegExp",
+    "default": [],
+    "tooltip": "Annotations that are validated with user-defined RegExp",
     "group": "Settings",
     "label": "Constrained labels",
     "target": true,

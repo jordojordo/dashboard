@@ -1,6 +1,7 @@
 [
   {
-    "description": "Controls which user ID the containers are run with.",
+    "default": [],
+    "tooltip": "Controls which user ID the containers are run with.",
     "group": "Settings",
     "label": "Run as user",
     "target": false,
@@ -9,7 +10,7 @@
     "subquestions": [
       {
         "default": "",
-        "description": "Defines the strategy used by the policy to enforce users and groups used in containers.",
+        "tooltip": "Defines the strategy used by the policy to enforce users and groups used in containers.",
         "group": "Settings",
         "label": "Rule",
         "options": [
@@ -24,14 +25,15 @@
         "default": false,
         "group": "Settings",
         "label": "Overwrite",
-        "show_if": "run_as_user.rule=MustRunAs",
+        "show_if": "run_as_user.rule=MustRunAs||run_as_user.rule=MustRunAsNonRoot",
         "type": "boolean",
         "variable": "run_as_user.overwrite"
       },
       {
+        "default": [],
         "group": "Settings",
         "label": "Ranges",
-        "show_if": "run_as_user.rule=MustRunAs",
+        "show_if": "run_as_user.rule=MustRunAs||run_as_user.rule=MustRunAsNonRoot",
         "target": false,
         "type": "map",
         "variable": "run_as_user.ranges",
@@ -40,7 +42,7 @@
             "default": 0,
             "group": "Settings",
             "label": "min",
-            "show_if": "run_as_user.rule=MustRunAs",
+            "show_if": "run_as_user.rule=MustRunAs||run_as_user.rule=MustRunAsNonRoot",
             "type": "int",
             "variable": "run_as_user.ranges.min"
           },
@@ -48,7 +50,7 @@
             "default": 0,
             "group": "Settings",
             "label": "max",
-            "show_if": "run_as_user.rule=MustRunAs",
+            "show_if": "run_as_user.rule=MustRunAs||run_as_user.rule=MustRunAsNonRoot",
             "type": "int",
             "variable": "run_as_user.ranges.max"
           }
@@ -57,7 +59,8 @@
     ]
   },
   {
-    "description": "Controls which primary group ID the containers are run with.",
+    "default": [],
+    "tooltip": "Controls which primary group ID the containers are run with.",
     "group": "Settings",
     "label": "Run as group",
     "target": false,
@@ -66,7 +69,7 @@
     "subquestions": [
       {
         "default": "",
-        "description": "Defines the strategy used by the policy to enforce users and groups used in containers.",
+        "tooltip": "Defines the strategy used by the policy to enforce users and groups used in containers.",
         "group": "Settings",
         "label": "Rule",
         "options": [
@@ -81,14 +84,15 @@
         "default": false,
         "group": "Settings",
         "label": "Overwrite",
-        "show_if": "run_as_group.rule=MustRunAs",
+        "show_if": "run_as_group.rule=MustRunAs||run_as_group.rule=MustRunAsNonRoot",
         "type": "boolean",
         "variable": "run_as_group.overwrite"
       },
       {
+        "default": [],
         "group": "Settings",
         "label": "Ranges",
-        "show_if": "run_as_group.rule=MustRunAs",
+        "show_if": "run_as_group.rule=MustRunAs||run_as_group.rule=MustRunAsNonRoot",
         "target": false,
         "type": "map",
         "variable": "run_as_group.ranges",
@@ -97,7 +101,7 @@
             "default": 0,
             "group": "Settings",
             "label": "min",
-            "show_if": "run_as_group.rule=MustRunAs",
+            "show_if": "run_as_group.rule=MustRunAs||run_as_group.rule=MustRunAsNonRoot",
             "type": "int",
             "variable": "run_as_group.ranges.min"
           },
@@ -105,7 +109,7 @@
             "default": 0,
             "group": "Settings",
             "label": "max",
-            "show_if": "run_as_group.rule=MustRunAs",
+            "show_if": "run_as_group.rule=MustRunAs||run_as_group.rule=MustRunAsNonRoot",
             "type": "int",
             "variable": "run_as_group.ranges.max"
           }
@@ -114,7 +118,8 @@
     ]
   },
   {
-    "description": "Controls which group IDs containers add.",
+    "default": [],
+    "tooltip": "Controls which group IDs containers add.",
     "group": "Settings",
     "label": "Supplemental groups",
     "target": false,
@@ -123,7 +128,7 @@
     "subquestions": [
       {
         "default": "",
-        "description": "Defines the strategy used by the policy to enforce users and groups used in containers.",
+        "tooltip": "Defines the strategy used by the policy to enforce users and groups used in containers.",
         "group": "Settings",
         "label": "Rule",
         "options": [
@@ -138,14 +143,15 @@
         "default": false,
         "group": "Settings",
         "label": "Overwrite",
-        "show_if": "supplemental_groups.rule=MustRunAs",
+        "show_if": "supplemental_groups.rule=MustRunAs||supplemental_groups.rule=MustRunAsNonRoot",
         "type": "boolean",
         "variable": "supplemental_groups.overwrite"
       },
       {
+        "default": [],
         "group": "Settings",
         "label": "Ranges",
-        "show_if": "supplemental_groups.rule=MustRunAs",
+        "show_if": "supplemental_groups.rule=MustRunAs||supplemental_groups.rule=MustRunAsNonRoot",
         "target": false,
         "type": "map",
         "variable": "supplemental_groups.ranges",
@@ -154,7 +160,7 @@
             "default": 0,
             "group": "Settings",
             "label": "min",
-            "show_if": "supplemental_groups.rule=MustRunAs",
+            "show_if": "supplemental_groups.rule=MustRunAs||supplemental_groups.rule=MustRunAsNonRoot",
             "type": "int",
             "variable": "supplemental_groups.ranges.min"
           },
@@ -162,7 +168,7 @@
             "default": 0,
             "group": "Settings",
             "label": "max",
-            "show_if": "supplemental_groups.rule=MustRunAs",
+            "show_if": "supplemental_groups.rule=MustRunAs||supplemental_groups.rule=MustRunAsNonRoot",
             "type": "int",
             "variable": "supplemental_groups.ranges.max"
           }
