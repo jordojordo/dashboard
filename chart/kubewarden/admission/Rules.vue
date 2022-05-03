@@ -64,7 +64,7 @@ export default {
 <template>
   <div v-if="rules">
     <div class="row mb-20">
-      <div class="col span-12">
+      <div class="col span-6">
         <LabeledSelect
           v-model="rules.apiGroups"
           label="API Groups"

@@ -1,5 +1,34 @@
 import SteveModel from '@/plugins/steve/steve-class';
+import { ADMISSION_POLICY_STATE } from '@/config/product/kubewarden';
 import { KUBEWARDEN, POD } from '@/config/types';
+
+export const RELATED_HEADERS = [
+  ADMISSION_POLICY_STATE,
+  {
+    name:   'name',
+    value:  'metadata.name',
+    label:  'Name',
+    sort:   'name:desc'
+  },
+  {
+    name:   'mode',
+    value:  'spec.mode',
+    label:  'Mode',
+    sort:   'mode'
+  },
+  {
+    name:   'module',
+    value:  'spec.module',
+    label:  'Module',
+    sort:   'module'
+  },
+  {
+    name:      'psCreated',
+    label:     'Created',
+    value:     'metadata.creationTimestamp',
+    formatter: 'LiveDate'
+  }
+];
 
 export const VALUES_STATE = {
   FORM: 'FORM',
@@ -33,12 +62,19 @@ export default class PolicyServer extends SteveModel {
     return out;
   }
 
-  get allPolicies() {
+  get allRelatedPolicies() {
     return async() => {
+      const types = [KUBEWARDEN.ADMISSION_POLICY, KUBEWARDEN.CLUSTER_ADMISSION_POLICY];
+      const promises = types.map(type => this.$dispatch(`cluster/findAll`, { type, opt: { force: true } }, { root: true }));
+
       try {
-        return await this.$store.dispatch('cluster/findAll', { type: KUBEWARDEN.POLICY_SERVER }, { root: true });
+        const out = await Promise.all(promises);
+
+        if ( out ) {
+          return out.flatMap(o => o).filter(f => f.spec?.policyServer === this.metadata?.name);
+        }
       } catch (e) {
-        console.error(`Error fetching policies: ${ e }`); // eslint-disable-line no-console
+        console.error(`Error fetching related policies: ${ e }`); // eslint-disable-line no-console
       }
     };
   }
