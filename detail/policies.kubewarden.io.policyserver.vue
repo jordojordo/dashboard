@@ -53,11 +53,7 @@ export default {
             :headers="RELATED_HEADERS"
             :groupable="true"
             group-by="kind"
-            :table-actions="false"
-            :row-actions="false"
-            key-field="name"
-            :paging="true"
-            :rows-per-page="10"
+            :table-actions="true"
           >
             <template #col:operation="{row}">
               <td>
