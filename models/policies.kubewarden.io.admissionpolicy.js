@@ -1,9 +1,6 @@
 import SteveModel from '@/plugins/steve/steve-class';
 import { KUBEWARDEN, SERVICE } from '@/config/types';
-
-// The uid in the proxy `r3Pw-107z` is setup in the configmap for the kubewarden dashboard
-// It's the generic uid from the json here: https://grafana.com/grafana/dashboards/15314
-export const POLICY_METRICS_URL = `/api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy/d/r3Pw-1O7z/kubewarden?orgId=1`;
+import { findBy } from '@/utils/array';
 
 export const TRACE_HEADERS = [
   {
@@ -51,6 +48,10 @@ export const OPERATION_MAP = {
 };
 
 export default class AdmissionPolicy extends SteveModel {
+  async allServices() {
+    return await this.$dispatch('cluster/findAll', { type: SERVICE }, { root: true });
+  }
+
   get detailPageHeaderBadgeOverride() {
     return this.status?.policyStatus;
   }
@@ -63,10 +64,32 @@ export default class AdmissionPolicy extends SteveModel {
     return null;
   }
 
+  get grafanaQuery() {
+    return async() => {
+      try {
+        const services = await this.allServices();
+
+        if ( services ) {
+          const s = findBy(this.svcs, 'id', 'cattle-monitoring-system/rancher-monitoring-grafana');
+
+          if ( s ) {
+            // The uid in the proxy `r3Pw-107z` is setup in the configmap for the kubewarden dashboard
+            // It's the generic uid from the json here: https://grafana.com/grafana/dashboards/15314
+            return `${ s.proxyUrl('http', 80) }/d/r3Pw-1O7z/kubewarden?orgId=1`;
+          }
+        }
+      } catch (e) {
+        console.error(`Error fetching services: ${ e }`); // eslint-disable-line no-console
+      }
+
+      return null;
+    };
+  }
+
   get jaegerQuery() {
     return async() => {
       try {
-        const services = await this.$dispatch('cluster/findAll', { type: SERVICE }, { root: true });
+        const services = await this.allServices();
 
         if ( services ) {
           return services.find((s) => {

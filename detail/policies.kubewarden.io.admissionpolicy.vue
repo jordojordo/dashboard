@@ -4,7 +4,7 @@ import { _CREATE } from '@/config/query-params';
 import { monitoringStatus } from '@/utils/monitoring';
 import { dashboardExists } from '@/utils/grafana';
 import CreateEditView from '@/mixins/create-edit-view';
-import { POLICY_METRICS_URL, TRACE_HEADERS, OPERATION_MAP } from '@/models/policies.kubewarden.io.admissionpolicy';
+import { TRACE_HEADERS, OPERATION_MAP } from '@/models/policies.kubewarden.io.admissionpolicy';
 
 import BadgeState from '@/components/BadgeState';
 import DashboardMetrics from '@/components/DashboardMetrics';
@@ -46,7 +46,9 @@ export default {
 
     try {
       if ( this.monitoringStatus.installed ) {
-        this.metricsService = await dashboardExists(this.$store, this.currentCluster?.id, POLICY_METRICS_URL);
+        const grafana = await this.grafanaQuery();
+
+        this.metricsService = await dashboardExists(this.$store, this.currentCluster?.id, grafana);
       }
     } catch (e) {
       console.error(`Error fetching metrics status: ${ e }`); // eslint-disable-line no-console
@@ -56,10 +58,9 @@ export default {
 
     if ( this.jaegerService ) {
       try {
-        const CLUSTER_PATH = `/k8s/clusters/${ this.currentCluster?.id }/api/v1/namespaces`;
         const TRACE_TAGS = `"allowed"%3A"false"%2C"policy_id"%3A"namespaced-${ fullPolicyName }"`;
-        const PROXY_PATH = `proxy/api/traces?service=kubewarden-policy-server&operation=validation&tags={${ TRACE_TAGS }}`;
-        const JAEGER_PATH = `${ CLUSTER_PATH }/${ this.jaegerService.metadata?.namespace }/services/http:${ this.jaegerService.metadata?.name }:16686/${ PROXY_PATH }`;
+        const PROXY_PATH = `api/traces?service=kubewarden-policy-server&operation=validation&tags={${ TRACE_TAGS }}`;
+        const JAEGER_PATH = `${ this.jaegerService.proxyUrl('http', 16686) + PROXY_PATH }`;
 
         this.traces = await this.$store.dispatch(`${ inStore }/request`, { url: JAEGER_PATH });
       } catch (e) {
@@ -70,7 +71,6 @@ export default {
 
   data() {
     return {
-      POLICY_METRICS_URL,
       TRACE_HEADERS,
 
       jaegerService:      null,
