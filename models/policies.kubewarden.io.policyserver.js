@@ -1,6 +1,7 @@
-import SteveModel from '@/plugins/steve/steve-class';
+import KubewardenModel from '@/plugins/kubewarden/policy-class';
 import { ADMISSION_POLICY_STATE } from '@/config/product/kubewarden';
 import { KUBEWARDEN, POD } from '@/config/types';
+import { isEmpty } from '@/utils/object';
 
 export const RELATED_HEADERS = [
   ADMISSION_POLICY_STATE,
@@ -46,7 +47,7 @@ export const YAML_OPTIONS = [
   }
 ];
 
-export default class PolicyServer extends SteveModel {
+export default class PolicyServer extends KubewardenModel {
   get _availableActions() {
     const out = super._availableActions;
 
@@ -77,6 +78,34 @@ export default class PolicyServer extends SteveModel {
         console.error(`Error fetching related policies: ${ e }`); // eslint-disable-line no-console
       }
     };
+  }
+
+  get jaegerProxy() {
+    return async() => {
+      const jaeger = await this.jaegerService();
+
+      if ( jaeger ) {
+        const policies = await this.allRelatedPolicies();
+        const types = [KUBEWARDEN.ADMISSION_POLICY, KUBEWARDEN.CLUSTER_ADMISSION_POLICY];
+
+        return policies?.map((p) => {
+          const type = types[p.kind];
+          const POLICY_ID = type === [KUBEWARDEN.ADMISSION_POLICY] ? `namespaced-${ p.metadata?.namespace }` : 'clusterwide';
+          const TRACE_TAGS = `"allowed"%3A"false"%2C"policy_id"%3A"${ POLICY_ID }-${ p.metadata?.name }"`;
+          const API_PATH = `api/traces?service=kubewarden-policy-server&operation=validation&limit=10&tags={${ TRACE_TAGS }}`;
+
+          return `${ jaeger.proxyUrl('http', 16686) + API_PATH }`;
+        });
+      }
+
+      return null;
+    };
+  }
+
+  consolidateTracesRows(traces) {
+    if ( !isEmpty(traces) ) {
+      return traces.flatMap(t => this.traceTableRows(t));
+    }
   }
 
   async openLogs() {

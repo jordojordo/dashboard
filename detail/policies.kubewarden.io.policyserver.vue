@@ -6,12 +6,13 @@ import { RELATED_HEADERS } from '@/models/policies.kubewarden.io.policyserver';
 import ResourceTabs from '@/components/form/ResourceTabs';
 import ResourceTable from '@/components/ResourceTable';
 import Tab from '@/components/Tabbed/Tab';
+import TraceTable from '@/components/TraceTable';
 
 export default {
   name: 'PolicyServer',
 
   components: {
-    ResourceTabs, ResourceTable, Tab
+    ResourceTabs, ResourceTable, Tab, TraceTable
   },
 
   mixins: [CreateEditView],
@@ -28,14 +29,35 @@ export default {
   },
 
   async fetch() {
+    const inStore = this.$store.getters['currentStore'](this.resource);
+
     this.relatedPolicies = await this.value.allRelatedPolicies();
+
+    const jaegerProxy = await this.value.jaegerProxy();
+
+    if ( jaegerProxy ) {
+      const promises = jaegerProxy.map(p => this.$store.dispatch(`${ inStore }/request`, { url: p }));
+
+      try {
+        this.traces = await Promise.all(promises);
+      } catch (e) {
+        console.error(`Error fetching Jaeger service: ${ e }`); // eslint-disable-line no-console
+      }
+    }
   },
 
   data() {
     return {
       RELATED_HEADERS,
-      relatedPolicies: null
+      relatedPolicies: null,
+      traces:          null
     };
+  },
+
+  computed: {
+    tracesRows() {
+      return this.value.consolidateTracesRows(this.traces);
+    }
   }
 };
 </script>
@@ -65,6 +87,11 @@ export default {
             </template>
           </ResourceTable>
         </template>
+      </Tab>
+      <Tab v-if="traces" name="policy-tracing" label="Tracing">
+        <TraceTable
+          :rows="tracesRows"
+        />
       </Tab>
     </ResourceTabs>
   </div>

@@ -4,23 +4,20 @@ import { _CREATE } from '@/config/query-params';
 import { monitoringStatus } from '@/utils/monitoring';
 import { dashboardExists } from '@/utils/grafana';
 import CreateEditView from '@/mixins/create-edit-view';
-import { TRACE_HEADERS, OPERATION_MAP } from '@/models/policies.kubewarden.io.admissionpolicy';
 
-import BadgeState from '@/components/BadgeState';
 import DashboardMetrics from '@/components/DashboardMetrics';
 import ResourceTabs from '@/components/form/ResourceTabs';
-import SortableTable from '@/components/SortableTable';
 import Tab from '@/components/Tabbed/Tab';
+import TraceTable from '@/components/TraceTable';
 
 export default {
   name: 'AdmissionPolicy',
 
   components: {
-    BadgeState,
     DashboardMetrics,
     ResourceTabs,
-    SortableTable,
-    Tab
+    Tab,
+    TraceTable
   },
 
   mixins: [CreateEditView],
@@ -54,7 +51,7 @@ export default {
       console.error(`Error fetching metrics status: ${ e }`); // eslint-disable-line no-console
     }
 
-    this.jaegerService = await this.value.jaegerQuery();
+    this.jaegerService = await this.value.jaegerService();
 
     if ( this.jaegerService ) {
       try {
@@ -71,8 +68,6 @@ export default {
 
   data() {
     return {
-      TRACE_HEADERS,
-
       jaegerService:      null,
       metricsService:     null,
       traces:             null,
@@ -98,34 +93,7 @@ export default {
     },
 
     tracesRows() {
-      const out = this.traces?.data?.map((trace) => {
-        const span = trace.spans.find(s => s.operationName === 'validation');
-
-        const date = new Date(span.startTime / 1000);
-        const duration = span.duration / 1000;
-
-        span.startTime = date.toUTCString();
-        span.duration = duration.toFixed(2);
-
-        const keys = ['kind', 'mutated', 'name', 'namespace', 'operation', 'response_message', 'response_code'];
-        const tags = keys.map(k => span.tags.find(tag => tag.key === k));
-
-        return tags?.reduce((tag, item) => ({
-          ...span, ...tag, [item?.key]: item?.value
-        }), {});
-      });
-
-      return out;
-    }
-  },
-
-  methods: {
-    color(op) {
-      return OPERATION_MAP[op];
-    },
-
-    capitalizeMessage(m) {
-      return m.charAt(0).toUpperCase() + m.slice(1);
+      return this.value.traceTableRows(this.traces);
     }
   }
 };
@@ -149,60 +117,9 @@ export default {
         </template>
       </Tab>
       <Tab v-if="traces" name="policy-tracing" label="Tracing">
-        <template #default>
-          <SortableTable
-            :rows="tracesRows"
-            :headers="TRACE_HEADERS"
-            :table-actions="false"
-            :row-actions="false"
-            key-field="traceID"
-            default-sort-by="startTime"
-            :sub-expandable="true"
-            :sub-expand-column="true"
-            :sub-rows="true"
-            :paging="true"
-            :rows-per-page="10"
-          >
-            <template #col:operation="{row}">
-              <td>
-                <BadgeState
-                  :label="row.operation"
-                  :color="color(row.operation)"
-                />
-              </td>
-            </template>
-            <template #sub-row="{row, fullColspan}">
-              <td :colspan="fullColspan" class="sub-row">
-                <div class="details">
-                  <section class="col">
-                    <div class="title">
-                      Response Message
-                    </div>
-                    <span class="text-warning">
-                      {{ capitalizeMessage(row.response_message) }}
-                    </span>
-                  </section>
-                  <section class="col">
-                    <div class="title">
-                      Response Code
-                    </div>
-                    <span class="text-info">
-                      {{ row.response_code ? row.response_code : 'N/A' }}
-                    </span>
-                  </section>
-                  <section class="col">
-                    <div class="title">
-                      Mutated
-                    </div>
-                    <span class="text-info">
-                      {{ row.mutated }}
-                    </span>
-                  </section>
-                </div>
-              </td>
-            </template>
-          </SortableTable>
-        </template>
+        <TraceTable
+          :rows="tracesRows"
+        />
       </Tab>
     </ResourceTabs>
   </div>

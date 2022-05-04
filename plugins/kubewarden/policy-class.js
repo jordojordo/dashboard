@@ -3,7 +3,52 @@ import { KUBEWARDEN, SERVICE } from '@/config/types';
 import { proxyUrlFromParts } from '@/models/service';
 import { findBy } from '@/utils/array';
 
-export default class PolicyModel extends SteveModel {
+export const TRACE_HEADERS = [
+  {
+    name:  'operation',
+    value: 'operation',
+    label: 'Operation',
+    sort:  'operation'
+  },
+  {
+    name:   'kind',
+    value:  'kind',
+    label:  'Kind',
+    sort:   'kind'
+  },
+  {
+    name:  'name',
+    value: 'name',
+    label: 'Name',
+    sort:  'name'
+  },
+  {
+    name:  'namespace',
+    value: 'namespace',
+    label: 'Namespace',
+    sort:  'namespace'
+  },
+  {
+    name:   'startTime',
+    value:  'startTime',
+    label:  'Start Time',
+    sort:   'startTime:desc'
+  },
+  {
+    name:   'duration',
+    value:  'duration',
+    label:  'Duration (ms)',
+    sort:   'duration'
+  }
+];
+
+export const OPERATION_MAP = {
+  CREATE: 'bg-info',
+  UPDATE: 'bg-warning',
+  DELETE: 'bg-error'
+};
+
+export default class KubewardenModel extends SteveModel {
   async allServices() {
     return await this.$dispatch('cluster/findAll', { type: SERVICE }, { root: true });
   }
@@ -54,7 +99,7 @@ export default class PolicyModel extends SteveModel {
     };
   }
 
-  get jaegerQuery() {
+  get jaegerService() {
     return async() => {
       try {
         const services = await this.allServices();
@@ -99,5 +144,26 @@ export default class PolicyModel extends SteveModel {
     }
 
     return null;
+  }
+
+  traceTableRows(traces) {
+    const out = traces?.data?.map((trace) => {
+      const span = trace.spans.find(s => s.operationName === 'validation');
+
+      const date = new Date(span.startTime / 1000);
+      const duration = span.duration / 1000;
+
+      span.startTime = date.toUTCString();
+      span.duration = duration.toFixed(2);
+
+      const keys = ['kind', 'mutated', 'name', 'namespace', 'operation', 'policy_id', 'response_message', 'response_code'];
+      const tags = keys.map(k => span.tags.find(tag => tag.key === k));
+
+      return tags?.reduce((tag, item) => ({
+        ...span, ...tag, [item?.key]: item?.value
+      }), {});
+    });
+
+    return out;
   }
 }
