@@ -400,7 +400,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.2.3",
+      "pluginVersion": "7.1.5",
       "targets": [
         {
           "exemplar": true,
@@ -457,7 +457,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.2.3",
+      "pluginVersion": "7.1.5",
       "targets": [
         {
           "exemplar": true,
@@ -514,7 +514,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.2.3",
+      "pluginVersion": "7.1.5",
       "targets": [
         {
           "exemplar": true,

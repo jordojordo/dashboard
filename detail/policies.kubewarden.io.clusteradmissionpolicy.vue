@@ -37,14 +37,18 @@ export default {
   async fetch() {
     const inStore = this.$store.getters['currentStore'](this.resource);
 
-    try {
-      if ( this.monitoringStatus.installed ) {
-        const grafana = await this.grafanaQuery();
+    this.metricsProxy = await this.value.grafanaProxy();
 
-        this.metricsService = await dashboardExists(this.$store, this.currentCluster?.id, grafana);
+    if ( this.monitoringStatus.installed ) {
+      try {
+        this.metricsProxy = await this.value.grafanaProxy();
+
+        if ( this.metricsProxy ) {
+          this.metricsService = await dashboardExists(this.$store, this.currentCluster?.id, this.metricsProxy);
+        }
+      } catch (e) {
+        console.error(`Error fetching Grafana service: ${ e }`); // eslint-disable-line no-console
       }
-    } catch (e) {
-      console.error(`Error fetching metrics status: ${ e }`); // eslint-disable-line no-console
     }
 
     this.jaegerService = await this.value.jaegerService();
@@ -64,8 +68,9 @@ export default {
 
   data() {
     return {
-      metricsService:     null,
       jaegerService:      null,
+      metricsProxy:       null,
+      metricsService:     null,
       traces:             null,
     };
   },
@@ -99,18 +104,18 @@ export default {
       <h3>{{ t('namespace.resources') }}</h3>
     </div>
     <ResourceTabs v-model="value" :mode="mode" :need-related="hasRelationships">
-      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="2">
+      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="1">
         <template #default="props">
           <DashboardMetrics
             v-if="props.active"
-            :detail-url="POLICY_METRICS_URL"
-            :summary-url="POLICY_METRICS_URL"
+            :detail-url="metricsProxy"
+            :summary-url="metricsProxy"
             :vars="dashboardVars"
             graph-height="825px"
           />
         </template>
       </Tab>
-      <Tab v-if="traces" name="policy-tracing" label="Tracing">
+      <Tab v-if="traces" name="policy-tracing" label="Tracing" :weight="2">
         <TraceTable
           :rows="tracesRows"
         />

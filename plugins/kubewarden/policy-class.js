@@ -77,22 +77,22 @@ export default class KubewardenModel extends SteveModel {
     }
   }
 
-  get grafanaQuery() {
+  get grafanaProxy() {
     return async() => {
       try {
         const services = await this.allServices();
 
         if ( services ) {
-          const s = findBy(this.svcs, 'id', 'cattle-monitoring-system/rancher-monitoring-grafana');
+          const grafana = findBy(services, 'id', 'cattle-monitoring-system/rancher-monitoring-grafana');
 
-          if ( s ) {
+          if ( grafana ) {
             // The uid in the proxy `r3Pw-107z` is setup in the configmap for the kubewarden dashboard
             // It's the generic uid from the json here: https://grafana.com/grafana/dashboards/15314
-            return `${ s.proxyUrl('http', 80) }/d/r3Pw-1O7z/kubewarden?orgId=1`;
+            return `${ grafana.proxyUrl('http', 80) }d/r3Pw-1O7z/kubewarden?orgId=1`;
           }
         }
       } catch (e) {
-        console.error(`Error fetching services: ${ e }`); // eslint-disable-line no-console
+        console.error(`Error fetching metrics service: ${ e }`); // eslint-disable-line no-console
       }
 
       return null;

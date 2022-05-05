@@ -1,8 +1,12 @@
 <script>
+import { mapGetters } from 'vuex';
 import { _CREATE } from '@/config/query-params';
-import CreateEditView from '@/mixins/create-edit-view';
 import { RELATED_HEADERS } from '@/models/policies.kubewarden.io.policyserver';
+import { dashboardExists } from '@/utils/grafana';
+import { monitoringStatus } from '@/utils/monitoring';
+import CreateEditView from '@/mixins/create-edit-view';
 
+import DashboardMetrics from '@/components/DashboardMetrics';
 import ResourceTabs from '@/components/form/ResourceTabs';
 import ResourceTable from '@/components/ResourceTable';
 import Tab from '@/components/Tabbed/Tab';
@@ -12,7 +16,7 @@ export default {
   name: 'PolicyServer',
 
   components: {
-    ResourceTabs, ResourceTable, Tab, TraceTable
+    DashboardMetrics, ResourceTabs, ResourceTable, Tab, TraceTable
   },
 
   mixins: [CreateEditView],
@@ -33,6 +37,18 @@ export default {
 
     this.relatedPolicies = await this.value.allRelatedPolicies();
 
+    if ( this.monitoringStatus.installed ) {
+      try {
+        this.metricsProxy = await this.value.grafanaProxy();
+
+        if ( this.metricsProxy ) {
+          this.metricsService = await dashboardExists(this.$store, this.currentCluster?.id, this.metricsProxy);
+        }
+      } catch (e) {
+        console.error(`Error fetching Grafana service: ${ e }`); // eslint-disable-line no-console
+      }
+    }
+
     const jaegerProxy = await this.value.jaegerProxy();
 
     if ( jaegerProxy ) {
@@ -49,12 +65,17 @@ export default {
   data() {
     return {
       RELATED_HEADERS,
+      metricsProxy:    null,
+      metricsService:  null,
       relatedPolicies: null,
       traces:          null
     };
   },
 
   computed: {
+    ...mapGetters(['currentCluster']),
+    ...monitoringStatus(),
+
     tracesRows() {
       return this.value.consolidateTracesRows(this.traces);
     }
@@ -88,10 +109,22 @@ export default {
           </ResourceTable>
         </template>
       </Tab>
+      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="2">
+        <template #default="props">
+          <DashboardMetrics
+            v-if="props.active"
+            :detail-url="metricsProxy"
+            :summary-url="metricsProxy"
+            graph-height="825px"
+          />
+        </template>
+      </Tab>
       <Tab v-if="traces" name="policy-tracing" label="Tracing">
-        <TraceTable
-          :rows="tracesRows"
-        />
+        <template>
+          <TraceTable
+            :rows="tracesRows"
+          />
+        </template>
       </Tab>
     </ResourceTabs>
   </div>
