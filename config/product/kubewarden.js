@@ -75,6 +75,7 @@ export function init(store) {
           sysctl_psp:                     { type: SPOOFED.SYSCTL_PSP },
           trusted_repos:                  { type: SPOOFED.TRUSTED_REPOS },
           user_group_psp:                 { type: SPOOFED.USER_GROUP_PSP },
+          verify_image_signatures:        { type: SPOOFED.VERIFY_IMAGE_SIGNATURES },
           volumes_psp:                    { type: SPOOFED.VOLUMES_PSP },
         }
       }

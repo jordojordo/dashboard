@@ -2406,6 +2406,15 @@ kubewarden:
         Container
         User
         Group
+    verify-image-signatures:
+      name: Verify Image Signatures
+      description: Validates Sigstore signatures for containers, init container and ephemeral container that match the name provided in the image settings field.
+      resourceType: Pod
+      keywords: |
+        Pod
+        Signature
+        Sigstore
+        Trusted
     volumes-psp:
       name: Volumes PSP
       description: Pod Security Policy that controls usage of volumes

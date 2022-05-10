@@ -5,13 +5,7 @@ import Question from './Question';
 export default {
   name:       'QuestionMap',
   components: { KeyValue },
-  props:      {
-    value: {
-      type:    Object,
-      default: null
-    }
-  },
-  mixins: [Question],
+  mixins:     [Question],
 
   methods: {
     update(val) {

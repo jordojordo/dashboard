@@ -304,6 +304,7 @@ export const KUBEWARDEN = {
     SYSCTL_PSP:                     'policies.kubewarden.io.policies.sysctl-psp',
     TRUSTED_REPOS:                  'policies.kubewarden.io.policies.trusted-repos',
     USER_GROUP_PSP:                 'policies.kubewarden.io.policies.user-group-psp',
+    VERIFY_IMAGE_SIGNATURES:        'policies.kubewarden.io.policies.verify-image-signatures',
     VOLUMES_PSP:                    'policies.kubewarden.io.policies.volumes-psp'
   }
 };

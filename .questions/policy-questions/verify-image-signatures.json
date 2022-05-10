@@ -1,0 +1,102 @@
+[
+  {
+    "default": true,
+    "description": "",
+    "group": "Settings",
+    "label": "Modify images with digest",
+    "required": false,
+    "type": "boolean",
+    "variable": "modifyImagesWithDigest"
+  },
+  {
+    "default": [],
+    "group": "Settings",
+    "label": "Signatures",
+    "target": false,
+    "tooltip": "A signature can be of two types: public key or keyless. Each signature has an image field which will be used to select the matching containers in the pod that will be evaluated. image supports wildcard. For example, ghcr.io/kubewarden/* will match all images from the kubewarden ghcr repo.",
+    "type": "map",
+    "variable": "signatures",
+    "subquestions": [
+
+    ]
+  },
+  {
+    "default": [],
+    "group": "Settings",
+    "label": "Public key signature",
+    "target": false,
+    "type": "map",
+    "variable": "signatures",
+    "subquestions": [
+      {
+        "default": "",
+        "group": "Settings",
+        "label": "Image",
+        "type": "string",
+        "variable": "signatures.image"
+      },
+      {
+        "default": [],
+        "group": "Settings",
+        "label": "Public keys",
+        "type": "array[",
+        "variable": "signatures.pubKeys"
+      },
+      {
+        "default": [],
+        "group": "Settings",
+        "label": "Annotations",
+        "type": "map[",
+        "variable": "signatures.annotations"
+      }
+    ]
+  },
+  {
+    "default": [],
+    "group": "Settings",
+    "label": "Keyless signature",
+    "target": false,
+    "type": "map",
+    "variable": "signatures",
+    "subquestions": [
+      {
+        "default": "",
+        "group": "Settings",
+        "label": "Image",
+        "type": "string",
+        "variable": "signatures.image"
+      },
+      {
+        "default": [],
+        "group": "Settings",
+        "label": "Keyless",
+        "target": false,
+        "type": "map",
+        "variable": "signatures.keyless",
+        "subquestions": [
+          {
+            "default": "",
+            "group": "Settings",
+            "label": "Issuer",
+            "type": "string",
+            "variable": "signatures.keyless.issuer"
+          },
+          {
+            "default": "",
+            "group": "Settings",
+            "label": "Subject",
+            "type": "string",
+            "variable": "signatures.keyless.subject"
+          }
+        ]
+      },
+      {
+        "default": [],
+        "group": "Settings",
+        "label": "Annotations",
+        "type": "map[",
+        "variable": "signatures.annotations"
+      }
+    ]
+  }
+]
