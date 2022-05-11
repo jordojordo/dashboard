@@ -269,8 +269,9 @@ export default ({
     },
 
     refresh() {
-      this.category = null;
       this.keywords = [];
+      this.category = null;
+      this.searchQuery = null;
     },
 
     policyQuestions() {
@@ -327,20 +328,20 @@ export default ({
               :disabled="isView"
             />
 
-            <Select
+            <LabeledSelect
               v-model="category"
               :clearable="true"
               :searchable="false"
               :options="categories"
               placement="bottom"
               class="filter__category"
-              label="label"
+              label="Filter by Service Type"
               :reduce="opt => opt.value"
             >
               <template #option="opt">
                 {{ opt.label }}
               </template>
-            </Select>
+            </LabeledSelect>
 
             <input
               ref="searchQuery"
@@ -356,7 +357,7 @@ export default ({
               type="button"
               @click="refresh"
             >
-              <i class="icon, icon-lg, icon-refresh" />
+              <i class="icon, icon-lg, icon-close" />
             </button>
           </div>
 

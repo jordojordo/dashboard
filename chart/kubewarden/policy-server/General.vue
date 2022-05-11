@@ -45,11 +45,11 @@ export default {
         <RadioGroup
           v-model="defaultImage"
           name="defaultImage"
-          :options="[false, true]"
+          :options="[true, false]"
           :mode="mode"
           class="mb-10"
           label="Default Image"
-          :labels="['No', 'Yes']"
+          :labels="['Yes', 'No']"
           tooltip="Use the default `policy-server` container image"
         />
         <template v-if="!defaultImage">
@@ -62,7 +62,9 @@ export default {
         </template>
       </div>
     </div>
+
     <div class="spacer"></div>
+
     <div class="row">
       <div class="col span-6">
         <h3>
@@ -74,6 +76,11 @@ export default {
           label="ServiceAccount Name"
         />
       </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="row">
       <div class="col span-6">
         <h3>
           Replicas
