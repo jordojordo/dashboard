@@ -204,7 +204,6 @@ export default ({
           const subtype = {
             key,
             resourceType,
-            icon:         this.subtypeIcon(resourceType),
             id:           type,
             label:        this.t(`kubewarden.policyCharts.${ shortType }.name`),
             description:  this.t(`kubewarden.policyCharts.${ shortType }.description`),
@@ -234,10 +233,6 @@ export default ({
       this.policyQuestions();
       this.stepBasic.ready = true;
       this.$refs.wizard.next();
-    },
-
-    subtypeIcon(type) {
-      return require(`~/assets/icons/${ type.toLowerCase() }.png`);
     },
 
     cancel() {
@@ -372,11 +367,6 @@ export default ({
               class="subtype"
               @click="selectType(subtype.id, $event)"
             >
-              <div class="subtype__icon">
-                <img v-if="subtype.icon" :src="subtype.icon" class="icon" />
-                <i v-else class="icon icon-apps"></i>
-              </div>
-
               <div class="subtype__metadata">
                 <div class="subtype__badge">
                   <label>{{ subtype.resourceType }}</label>
@@ -405,9 +395,7 @@ export default ({
 <style lang="scss" scoped>
   $padding: 5px;
   $height: 110px;
-  $side: 15px;
   $margin: 10px;
-  $logo: 60px;
 
   ::v-deep .step-container {
     height: auto;
@@ -505,7 +493,6 @@ export default ({
       }
 
       &__metadata {
-        margin-left: $side+$logo+$margin;
         padding: $margin;
       }
 
@@ -524,29 +511,6 @@ export default ({
           text-overflow: ellipsis;
           color: var(--app-rancher-accent-text);
           margin: 0;
-        }
-      }
-
-      &__icon {
-        text-align: center;
-        position: absolute;
-        width: 85px;
-        height: 100%;
-        overflow: hidden;
-        background-color: var(--simple-box-border);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        img, i {
-          width: $logo;
-          height: $logo;
-          background: #fff;
-          border-radius: 50%;
-          object-fit: contain;
-          display: flex;
-          justify-content: center;
-          align-items: center;
         }
       }
 
