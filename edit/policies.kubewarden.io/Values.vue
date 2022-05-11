@@ -30,8 +30,8 @@ export default {
 
   props: {
     mode: {
-      type:    String,
-      default: _VIEW
+      type:     String,
+      default:  _VIEW
     },
     chartValues: {
       type:     Object,

@@ -35,6 +35,10 @@ export default {
     await this.fetchChart();
   },
 
+  provide() {
+    return { chartType: this.value.type };
+  },
+
   computed: {
     isCreate() {
       return this.realMode === _CREATE;

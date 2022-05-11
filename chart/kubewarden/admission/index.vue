@@ -25,12 +25,18 @@ export default {
   },
 
   data() {
-    return { chartValues: this.value };
+    let chartValues = null;
+
+    if ( this.value ) {
+      chartValues = this.value;
+    }
+
+    return { chartValues };
   },
 
   computed: {
     hasSettings() {
-      return !!this.value.policy?.spec?.settings && !isEmpty(this.value.policy.spec.settings);
+      return !!this.value?.policy?.spec?.settings && !isEmpty(this.value.policy.spec.settings);
     },
 
     targetNamespace() {

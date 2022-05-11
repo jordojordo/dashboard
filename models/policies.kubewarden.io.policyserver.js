@@ -86,11 +86,15 @@ export default class PolicyServer extends KubewardenModel {
 
       if ( jaeger ) {
         const policies = await this.allRelatedPolicies();
-        const types = [KUBEWARDEN.ADMISSION_POLICY, KUBEWARDEN.CLUSTER_ADMISSION_POLICY];
+        const types = {
+          [KUBEWARDEN.ADMISSION_POLICY]:         'namespaced',
+          [KUBEWARDEN.CLUSTER_ADMISSION_POLICY]: 'clusterwide'
+        };
 
         return policies?.map((p) => {
-          const type = types[p.kind];
-          const POLICY_ID = type === [KUBEWARDEN.ADMISSION_POLICY] ? `namespaced-${ p.metadata?.namespace }` : 'clusterwide';
+          const type = types[p.type];
+
+          const POLICY_ID = type === 'namespaced' ? `${ type }-${ p.metadata?.namespace }` : type;
           const TRACE_TAGS = `"allowed"%3A"false"%2C"policy_id"%3A"${ POLICY_ID }-${ p.metadata?.name }"`;
           const API_PATH = `api/traces?service=kubewarden-policy-server&operation=validation&limit=10&tags={${ TRACE_TAGS }}`;
 

@@ -128,22 +128,25 @@ export default class KubewardenModel extends SteveModel {
   }
 
   get policyQuestions() {
-    const module = this.spec.module;
+    return async() => {
+      const module = this.spec.module;
 
-    const found = this.policyTypes.find((t) => {
-      if ( module.includes( t.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '') ) ) {
-        return t;
+      const found = this.policyTypes.find((t) => {
+        if ( module.includes( t.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '') ) ) {
+          return t;
+        }
+      });
+
+      // Spoofing the questions object from hard-typed questions json for each policy
+      if ( found ) {
+        const short = found.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '');
+        const json = (await import(/* webpackChunkName: "policy-questions" */`@/.questions/policy-questions/${ short }.json`)).default;
+
+        return json;
       }
-    });
 
-    // Spoofing the questions object from hard-typed questions json for each policy
-    if ( found ) {
-      const short = found.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '');
-
-      return require(`@/.questions/policy-questions/${ short }.json`);
-    }
-
-    return null;
+      return null;
+    };
   }
 
   traceTableRows(traces) {

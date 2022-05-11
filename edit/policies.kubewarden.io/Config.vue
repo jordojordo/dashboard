@@ -19,12 +19,18 @@ export default {
 
   components: { Values },
 
-  fetch() {
-    if ( this.value ) {
-      this.chartValues = {
-        policy:    this.value,
-        questions: { questions: this.value.policyQuestions }
-      };
+  async fetch() {
+    this.chartValues = {
+      policy:    this.value,
+      questions: null
+    };
+
+    let questionsJson = null;
+
+    if ( this.value.spec?.settings ) {
+      questionsJson = await this.value.policyQuestions();
+
+      this.chartValues.questions = { questions: questionsJson };
     }
   },
 

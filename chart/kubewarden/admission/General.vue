@@ -69,7 +69,7 @@ export default {
     },
 
     policyServerOptions() {
-      if ( this.policyServers.length > 0 ) {
+      if ( this.policyServers?.length > 0 ) {
         const out = [];
 
         this.policyServers.map(p => out.push(p.id));
@@ -77,7 +77,7 @@ export default {
         return out;
       }
 
-      return this.policyServers;
+      return this.policyServers || [];
     }
   }
 };
