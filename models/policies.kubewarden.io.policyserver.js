@@ -12,16 +12,16 @@ export const RELATED_HEADERS = [
     sort:   'name:desc'
   },
   {
-    name:   'mode',
-    value:  'spec.mode',
-    label:  'Mode',
-    sort:   'mode'
-  },
-  {
     name:   'module',
     value:  'spec.module',
     label:  'Module',
     sort:   'module'
+  },
+  {
+    name:   'mode',
+    value:  'spec.mode',
+    label:  'Mode',
+    sort:   'mode'
   },
   {
     name:      'psCreated',

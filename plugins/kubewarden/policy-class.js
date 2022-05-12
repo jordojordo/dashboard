@@ -2,6 +2,9 @@ import SteveModel from '@/plugins/steve/steve-class';
 import { KUBEWARDEN, SERVICE } from '@/config/types';
 import { proxyUrlFromParts } from '@/models/service';
 import { findBy } from '@/utils/array';
+import { isEmpty } from '@/utils/object';
+import filter from 'lodash/filter';
+import matches from 'lodash/matches';
 
 export const TRACE_HEADERS = [
   {
@@ -119,6 +122,23 @@ export default class KubewardenModel extends SteveModel {
 
       return null;
     };
+  }
+
+  // Determines if a policy is targeting rancher specific namespaces (which happens by default)
+  get namespaceSelector() {
+    const labelSelector = {
+      key:      'kubernetes.io/metadata.name',
+      operator: 'NotIn',
+      values:   ['cattle-system', 'rancher-operator-system']
+    };
+
+    const out = filter(this.spec?.namespaceSelector?.matchExpressions, matches(labelSelector));
+
+    if ( !isEmpty(out) ) {
+      return true;
+    }
+
+    return false;
   }
 
   get policyTypes() {

@@ -11,6 +11,7 @@ import ResourceTabs from '@/components/form/ResourceTabs';
 import ResourceTable from '@/components/ResourceTable';
 import Tab from '@/components/Tabbed/Tab';
 import TraceTable from '@/components/TraceTable';
+import { KUBEWARDEN } from '~/config/types';
 
 export default {
   name: 'PolicyServer',
@@ -76,9 +77,23 @@ export default {
     ...mapGetters(['currentCluster']),
     ...monitoringStatus(),
 
+    namespaceWarning() {
+      return 'This policy is targeting Rancher specific namespaces which will cause catastrophic failures with your Rancher deployment.';
+    },
+
     tracesRows() {
       return this.value.consolidateTracesRows(this.traces);
     }
+  },
+
+  methods: {
+    hasNamespaceSelector(row) {
+      if ( row.type === KUBEWARDEN.CLUSTER_ADMISSION_POLICY ) {
+        return row.namespaceSelector;
+      }
+
+      return true;
+    },
   }
 };
 </script>
@@ -98,12 +113,25 @@ export default {
             group-by="kind"
             :table-actions="true"
           >
-            <template #col:operation="{row}">
+            <template #col:operation="{ row }">
               <td>
                 <BadgeState
                   :label="row.operation"
                   :color="color(row.operation)"
                 />
+              </td>
+            </template>
+
+            <template #col:mode="{ row }">
+              <td>
+                <span class="policy__mode">
+                  <span class="text-capitalize">{{ row.spec.mode }}</span>
+                  <i
+                    v-if="!hasNamespaceSelector(row)"
+                    v-tooltip.bottom="namespaceWarning"
+                    class="icon icon-warning"
+                  />
+                </span>
               </td>
             </template>
           </ResourceTable>
@@ -129,3 +157,18 @@ export default {
     </ResourceTabs>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.policy {
+  &__mode {
+    display: flex;
+    align-items: center;
+
+    i {
+      margin-left: 5px;
+      font-size: 22px;
+      color: var(--warning);
+    }
+  }
+}
+</style>

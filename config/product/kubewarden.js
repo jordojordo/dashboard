@@ -129,6 +129,11 @@ export function init(store) {
       },
     },
     {
+      name:  'mode',
+      label: 'Mode',
+      value: 'spec.mode'
+    },
+    {
       name:      'capCreated',
       label:     'Created',
       value:     'metadata.creationTimestamp',
@@ -155,6 +160,11 @@ export function init(store) {
           params: { resource: CLUSTER_ADMISSION_POLICY }
         }
       },
+    },
+    {
+      name:  'mode',
+      label: 'Mode',
+      value: 'spec.mode'
     },
     {
       name:      'capCreated',

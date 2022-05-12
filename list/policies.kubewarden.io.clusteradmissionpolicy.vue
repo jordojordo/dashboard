@@ -82,18 +82,16 @@ export default {
       return this.$store.getters['type-map/headersFor'](this.schema);
     },
 
-    // This needs to be fixed... currently if a resource/action is selected that has only 1 row and
-    // then another resource/action is selected that *also* has 1 row: showRows and this.filteredRows
-    // update correctly, but ResourceTable will not update. It reuses whatever computed value is in the cache.
-    //
-    // e.g. select `Services` as a resource, then select `Ingress`.
-    //  - this.filteredRows is updated but ResourceTable's rows do not update.
     showRows() {
-      if (this.filteredResource === '' && this.filteredAction === '') {
+      if ( this.filteredResource === '' && this.filteredAction === '' ) {
         return this.rows;
       }
 
       return this.filteredRows;
+    },
+
+    namespaceWarning() {
+      return 'This policy is targeting Rancher specific namespaces which will cause catastrophic failures with your Rancher deployment.';
     }
   },
 
@@ -132,7 +130,11 @@ export default {
       });
 
       this.$set(this, 'filteredRows', out);
-    }
+    },
+
+    hasNamespaceSelector(row) {
+      return row.namespaceSelector;
+    },
   }
 };
 </script>
@@ -180,6 +182,34 @@ export default {
       </div>
     </div>
 
-    <ResourceTable :schema="schema" :rows="showRows" :headers="headers" />
+    <ResourceTable :schema="schema" :rows="showRows" :headers="headers">
+      <template #col:mode="{ row }">
+        <td>
+          <span class="policy__mode">
+            <span class="text-capitalize">{{ row.spec.mode }}</span>
+            <i
+              v-if="!hasNamespaceSelector(row)"
+              v-tooltip.bottom="namespaceWarning"
+              class="icon icon-warning"
+            />
+          </span>
+        </td>
+      </template>
+    </ResourceTable>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.policy {
+  &__mode {
+    display: flex;
+    align-items: center;
+
+    i {
+      margin-left: 5px;
+      font-size: 22px;
+      color: var(--warning);
+    }
+  }
+}
+</style>

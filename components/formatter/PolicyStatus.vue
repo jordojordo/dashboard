@@ -52,12 +52,10 @@ export default {
 
 <template>
   <div>
-    <div>
-      <BadgeState
-        v-if="value"
-        :color="stateBackground"
-        :label="stateDisplay"
-      />
-    </div>
+    <BadgeState
+      v-if="value"
+      :color="stateBackground"
+      :label="stateDisplay"
+    />
   </div>
 </template>
