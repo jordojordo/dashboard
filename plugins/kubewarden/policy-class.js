@@ -51,6 +51,34 @@ export const OPERATION_MAP = {
   DELETE: 'bg-error'
 };
 
+export const RANCHER_NAMESPACES = [
+  'calico-system',
+  'cattle-alerting',
+  'cattle-fleet-local-system',
+  'cattle-fleet-system',
+  'cattle-global-data',
+  'cattle-global-nt',
+  'cattle-impersonation-system',
+  'cattle-istio',
+  'cattle-logging',
+  'cattle-pipeline',
+  'cattle-prometheus',
+  'cattle-system',
+  'cert-manager',
+  'ingress-nginx',
+  'kube-node-lease',
+  'kube-public',
+  'kube-system',
+  'rancher-operator-system',
+  'security-scan',
+  'tigera-operator'
+];
+
+export const NAMESPACE_SELECTOR = {
+  key:      'kubernetes.io/metadata.name',
+  operator: 'NotIn',
+  values:   RANCHER_NAMESPACES
+};
 export default class KubewardenModel extends SteveModel {
   async allServices() {
     return await this.$dispatch('cluster/findAll', { type: SERVICE }, { root: true });
@@ -126,13 +154,7 @@ export default class KubewardenModel extends SteveModel {
 
   // Determines if a policy is targeting rancher specific namespaces (which happens by default)
   get namespaceSelector() {
-    const labelSelector = {
-      key:      'kubernetes.io/metadata.name',
-      operator: 'NotIn',
-      values:   ['cattle-system', 'rancher-operator-system']
-    };
-
-    const out = filter(this.spec?.namespaceSelector?.matchExpressions, matches(labelSelector));
+    const out = filter(this.spec?.namespaceSelector?.matchExpressions, matches(NAMESPACE_SELECTOR));
 
     if ( !isEmpty(out) ) {
       return true;

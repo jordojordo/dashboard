@@ -1,5 +1,6 @@
 <script>
 import { mapGetters } from 'vuex';
+import { KUBEWARDEN } from '@/config/types';
 import { _CREATE } from '@/config/query-params';
 import { RELATED_HEADERS } from '@/models/policies.kubewarden.io.policyserver';
 import { dashboardExists } from '@/utils/grafana';
@@ -11,7 +12,6 @@ import ResourceTabs from '@/components/form/ResourceTabs';
 import ResourceTable from '@/components/ResourceTable';
 import Tab from '@/components/Tabbed/Tab';
 import TraceTable from '@/components/TraceTable';
-import { KUBEWARDEN } from '~/config/types';
 
 export default {
   name: 'PolicyServer',
@@ -92,6 +92,7 @@ export default {
         return row.namespaceSelector;
       }
 
+      // No need to check if it's an AdmissionPolicy... unless they decide to target something they shouldn't
       return true;
     },
   }

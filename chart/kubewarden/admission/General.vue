@@ -1,6 +1,7 @@
 <script>
 import { _CREATE } from '@/config/query-params';
 import { KUBEWARDEN } from '@/config/types';
+import { set } from '@/utils/object';
 
 import NameNsDescription from '@/components/form/NameNsDescription';
 import LabeledInput from '@/components/form/LabeledInput';
@@ -36,6 +37,8 @@ export default {
 
   async fetch() {
     this.policyServers = await this.$store.dispatch('cluster/findAll', { type: KUBEWARDEN.POLICY_SERVER });
+
+    set(this.policy, 'ignoreRancherNamespaces', this.hasNamespaceSelector); // need to check if this is create mode, if not check if the namespace selector is there
   },
 
   data() {
@@ -51,6 +54,14 @@ export default {
   },
 
   computed: {
+    hasNamespaceSelector() {
+      if ( !this.isCreate && this.chartType === KUBEWARDEN.CLUSTER_ADMISSION_POLICY ) {
+        return this.value.policy.namespaceSelector;
+      }
+
+      return true;
+    },
+
     isCreate() {
       return this.mode === _CREATE;
     },
@@ -139,6 +150,19 @@ export default {
           label="Mode"
           :labels="['Monitor', 'Protect']"
           tooltip="The monitor mode is a way to deploy policies to the cluster in a way that all requests that go through the policy will be accepted, as if the policy didn't exist. Defaults to 'Protect'."
+        />
+      </div>
+    </div>
+    <div class="row mb-20">
+      <div class="col span-6">
+        <RadioGroup
+          v-model="policy.ignoreRancherNamespaces"
+          name="ignoreRancherNamespaces"
+          :options="[false, true]"
+          :mode="mode"
+          label="Ignore Rancher Namespaces"
+          :labels="['No', 'Yes']"
+          tooltip="Certain policies will break core services of Rancher, this will add a default list of namespaces to ignore."
         />
       </div>
     </div>

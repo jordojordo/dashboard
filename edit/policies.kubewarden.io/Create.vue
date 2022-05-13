@@ -4,6 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import merge from 'lodash/merge';
 import isEmpty from 'lodash/isEmpty';
 import { mapGetters } from 'vuex';
+import { NAMESPACE_SELECTOR } from '@/plugins/kubewarden/policy-class';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
 import {
@@ -13,6 +14,7 @@ import { KUBEWARDEN } from '@/config/types';
 import { saferDump } from '@/utils/create-yaml';
 import { ensureRegex } from '@/utils/string';
 import { sortBy } from '@/utils/sort';
+import { set } from '@/utils/object';
 
 import ButtonGroup from '@/components/ButtonGroup';
 import LabeledSelect from '@/components/form/LabeledSelect';
@@ -50,7 +52,6 @@ export default ({
 
     try {
       // Without importing this here the object would maintain the state
-      // We've got some weirdness going on here...
       this.questions = await import(/* webpackChunkName: "questions-data" */ '@/.questions/questions.json');
 
       const _questions = cloneDeep(JSON.parse(JSON.stringify(this.questions)));
@@ -74,18 +75,18 @@ export default ({
 
   data() {
     return {
-      questions:           null,
-      errors:              null,
-      category:            null,
-      keywords:            [],
-      searchQuery:         null,
-      type:                null,
-      version:             null,
+      questions:    null,
+      errors:       null,
+      category:     null,
+      keywords:     [],
+      searchQuery:  null,
+      type:         null,
+      version:      null,
 
-      chartValues:         null,
-      yamlValues:          null,
+      chartValues:  null,
+      yamlValues:   null,
 
-      stepBasic:     {
+      stepBasic: {
         name:   'basics',
         label:  'Policies',
         ready:  false,
@@ -257,6 +258,13 @@ export default ({
           this.chartValues.policy.spec.rules[0].apiGroups.push('');
         }
 
+        const { ignoreRancherNamespaces } = this.chartValues.policy;
+
+        if ( ignoreRancherNamespaces ) {
+          set(this.chartValues.policy.spec, 'namespaceSelector', { matchExpressions: [NAMESPACE_SELECTOR] });
+          delete this.chartValues.policy.ignoreRancherNamespaces;
+        }
+
         const out = this.chartValues?.policy ? this.chartValues.policy : jsyaml.load(this.yamlValues);
 
         merge(this.value, out);
@@ -279,7 +287,7 @@ export default ({
       const match = require(`@/.questions/policies/${ shortType }.json`);
 
       if ( match ) {
-        this.$set(this.chartValues, 'policy', match);
+        set(this.chartValues, 'policy', match);
       }
 
       // Spoofing the questions object from hard-typed questions json for each policy
@@ -287,7 +295,7 @@ export default ({
         const questionsMatch = require(`@/.questions/policy-questions/${ shortType }.json`);
 
         if ( questionsMatch ) {
-          this.$set(this.chartValues.questions, 'questions', questionsMatch);
+          set(this.chartValues.questions, 'questions', questionsMatch);
         }
       }
     }
