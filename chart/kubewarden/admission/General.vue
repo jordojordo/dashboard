@@ -38,7 +38,9 @@ export default {
   async fetch() {
     this.policyServers = await this.$store.dispatch('cluster/findAll', { type: KUBEWARDEN.POLICY_SERVER });
 
-    set(this.policy, 'ignoreRancherNamespaces', this.hasNamespaceSelector); // need to check if this is create mode, if not check if the namespace selector is there
+    if ( this.isGlobal ) {
+      set(this.policy, 'ignoreRancherNamespaces', this.hasNamespaceSelector);
+    }
   },
 
   data() {
@@ -55,7 +57,7 @@ export default {
 
   computed: {
     hasNamespaceSelector() {
-      if ( !this.isCreate && this.chartType === KUBEWARDEN.CLUSTER_ADMISSION_POLICY ) {
+      if ( !this.isCreate ) {
         return this.value.policy.namespaceSelector;
       }
 
@@ -153,18 +155,20 @@ export default {
         />
       </div>
     </div>
-    <div class="row mb-20">
-      <div class="col span-6">
-        <RadioGroup
-          v-model="policy.ignoreRancherNamespaces"
-          name="ignoreRancherNamespaces"
-          :options="[false, true]"
-          :mode="mode"
-          label="Ignore Rancher Namespaces"
-          :labels="['No', 'Yes']"
-          tooltip="Certain policies will break core services of Rancher, this will add a default list of namespaces to ignore."
-        />
+    <template v-if="isGlobal">
+      <div class="row mb-20">
+        <div class="col span-6">
+          <RadioGroup
+            v-model="policy.ignoreRancherNamespaces"
+            name="ignoreRancherNamespaces"
+            :options="[false, true]"
+            :mode="mode"
+            label="Ignore Rancher Namespaces"
+            :labels="['No', 'Yes']"
+            tooltip="Certain policies will break core services of Rancher, this will add a default list of namespaces to ignore."
+          />
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
