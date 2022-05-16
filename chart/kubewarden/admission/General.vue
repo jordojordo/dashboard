@@ -163,10 +163,10 @@ export default {
           <RadioGroup
             v-model="policy.ignoreRancherNamespaces"
             name="ignoreRancherNamespaces"
-            :options="[false, true]"
+            :options="[true, false]"
             :mode="mode"
             label="Ignore Rancher Namespaces"
-            :labels="['No', 'Yes']"
+            :labels="['Yes', 'No']"
             tooltip="Certain policies will break core services of Rancher, this will add a default list of namespaces to ignore."
           />
         </div>
