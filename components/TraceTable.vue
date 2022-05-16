@@ -11,7 +11,7 @@ export default {
   props: {
     rows: {
       type:     Array,
-      required: true
+      default:  () => []
     }
   },
 
@@ -66,12 +66,13 @@ export default {
 
 <template>
   <div>
-    <Banner v-if="noRows" color="info">
+    <Banner v-if="noRows" color="warning">
       <span v-if="isPolicyServer">No tracing data exists for the related policies.</span>
       <span v-else>No tracing data exists for this policy.</span>
     </Banner>
 
     <SortableTable
+      v-else
       :rows="rows"
       :headers="TRACE_HEADERS"
       :group-by="groupField"

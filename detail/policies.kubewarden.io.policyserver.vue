@@ -8,6 +8,7 @@ import { monitoringStatus } from '@/utils/monitoring';
 import CreateEditView from '@/mixins/create-edit-view';
 
 import DashboardMetrics from '@/components/DashboardMetrics';
+import Loading from '@/components/Loading';
 import ResourceTabs from '@/components/form/ResourceTabs';
 import ResourceTable from '@/components/ResourceTable';
 import Tab from '@/components/Tabbed/Tab';
@@ -17,7 +18,7 @@ export default {
   name: 'PolicyServer',
 
   components: {
-    DashboardMetrics, ResourceTabs, ResourceTable, Tab, TraceTable
+    DashboardMetrics, Loading, ResourceTabs, ResourceTable, Tab, TraceTable
   },
 
   mixins: [CreateEditView],
@@ -51,10 +52,10 @@ export default {
       }
     }
 
-    const jaegerProxy = await this.value.jaegerProxy();
+    this.jaegerProxy = await this.value.jaegerProxy();
 
-    if ( jaegerProxy ) {
-      const promises = jaegerProxy.map(p => this.$store.dispatch(`${ inStore }/request`, { url: p }));
+    if ( this.jaegerProxy ) {
+      const promises = this.jaegerProxy.map(p => this.$store.dispatch(`${ inStore }/request`, { url: p }));
 
       try {
         this.traces = await Promise.all(promises);
@@ -67,6 +68,7 @@ export default {
   data() {
     return {
       RELATED_HEADERS,
+      jaegerProxy:     null,
       metricsProxy:    null,
       metricsService:  null,
       relatedPolicies: null,
@@ -101,12 +103,13 @@ export default {
 </script>
 
 <template>
-  <div>
+  <Loading v-if="$fetchState.pending" />
+  <div v-else>
     <div class="mb-20">
       <h3>{{ t('namespace.resources') }}</h3>
     </div>
     <ResourceTabs v-model="value" :mode="mode">
-      <Tab v-if="relatedPolicies" name="related-policies" label="Policies" :weight="1">
+      <Tab name="related-policies" label="Policies" :weight="99">
         <template #default>
           <ResourceTable
             :rows="relatedPolicies"
@@ -139,7 +142,7 @@ export default {
           </ResourceTable>
         </template>
       </Tab>
-      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="2">
+      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="98">
         <template #default="props">
           <DashboardMetrics
             v-if="props.active"
@@ -149,7 +152,7 @@ export default {
           />
         </template>
       </Tab>
-      <Tab v-if="traces" name="policy-tracing" label="Tracing">
+      <Tab v-if="jaegerProxy" name="policy-tracing" label="Tracing" :weight="97">
         <template>
           <TraceTable
             :rows="tracesRows"

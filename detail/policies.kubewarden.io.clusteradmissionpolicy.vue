@@ -6,6 +6,7 @@ import { dashboardExists } from '@/utils/grafana';
 import CreateEditView from '@/mixins/create-edit-view';
 
 import DashboardMetrics from '@/components/DashboardMetrics';
+import Loading from '@/components/Loading';
 import ResourceTabs from '@/components/form/ResourceTabs';
 import Tab from '@/components/Tabbed/Tab';
 import TraceTable from '@/components/TraceTable';
@@ -14,7 +15,7 @@ export default {
   name: 'ClusterAdmissionPolicy',
 
   components: {
-    DashboardMetrics, ResourceTabs, Tab, TraceTable
+    DashboardMetrics, Loading, ResourceTabs, Tab, TraceTable
   },
 
   mixins: [CreateEditView],
@@ -101,12 +102,13 @@ export default {
 </script>
 
 <template>
-  <div>
+  <Loading v-if="$fetchState.pending" />
+  <div v-else>
     <div class="mb-20">
       <h3>{{ t('namespace.resources') }}</h3>
     </div>
     <ResourceTabs v-model="value" :mode="mode" :need-related="hasRelationships">
-      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="1">
+      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="99">
         <template #default="props">
           <DashboardMetrics
             v-if="props.active"
@@ -117,7 +119,7 @@ export default {
           />
         </template>
       </Tab>
-      <Tab v-if="traces" name="policy-tracing" label="Tracing" :weight="2">
+      <Tab v-if="traces" name="policy-tracing" label="Tracing" :weight="98">
         <TraceTable
           :rows="tracesRows"
         />
