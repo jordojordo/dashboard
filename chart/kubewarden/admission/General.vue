@@ -127,6 +127,7 @@ export default {
           :mode="mode"
           label="Module"
           tooltip="This is the WebAssembly module that holds the validation or mutation logic."
+          :required="true"
         />
       </div>
     </div>
@@ -140,6 +141,7 @@ export default {
           label="Mutating"
           :labels="['No', 'Yes']"
           tooltip="A mutating policy will rebuild the requests with definied values that are conformant with the policy definition."
+          required
         />
       </div>
       <div class="col span-6">

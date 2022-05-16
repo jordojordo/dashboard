@@ -117,6 +117,11 @@ export function init(store) {
       value: 'spec.policyServer'
     },
     {
+      name:  'mode',
+      label: 'Mode',
+      value: 'spec.mode'
+    },
+    {
       name:          'kubewardenAdmissionPolicies',
       label:         'Module',
       value:         'spec.module',
@@ -127,11 +132,6 @@ export function init(store) {
           params: { resource: ADMISSION_POLICY }
         }
       },
-    },
-    {
-      name:  'mode',
-      label: 'Mode',
-      value: 'spec.mode'
     },
     {
       name:      'capCreated',
@@ -150,6 +150,11 @@ export function init(store) {
       value: 'spec.policyServer'
     },
     {
+      name:  'mode',
+      label: 'Mode',
+      value: 'spec.mode'
+    },
+    {
       name:          'kubewardenClusterAdmissionPolicies',
       label:         'Module',
       value:         'spec.module',
@@ -160,11 +165,6 @@ export function init(store) {
           params: { resource: CLUSTER_ADMISSION_POLICY }
         }
       },
-    },
-    {
-      name:  'mode',
-      label: 'Mode',
-      value: 'spec.mode'
     },
     {
       name:      'capCreated',

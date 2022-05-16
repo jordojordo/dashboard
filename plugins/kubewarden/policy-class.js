@@ -51,6 +51,13 @@ export const OPERATION_MAP = {
   DELETE: 'bg-error'
 };
 
+export const RESOURCE_MAP = {
+  pod:     'var(--info)',
+  ingress: 'var(--success)',
+  global:  'var(--warning)',
+  service: 'var(--error)'
+};
+
 export const RANCHER_NAMESPACES = [
   'calico-system',
   'cattle-alerting',
@@ -79,6 +86,7 @@ export const NAMESPACE_SELECTOR = {
   operator: 'NotIn',
   values:   RANCHER_NAMESPACES
 };
+
 export default class KubewardenModel extends SteveModel {
   async allServices() {
     return await this.$dispatch('cluster/findAll', { type: SERVICE }, { root: true });

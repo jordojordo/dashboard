@@ -20,10 +20,12 @@ export default {
       type:    String,
       default: _EDIT
     },
+
     realMode: {
       type:    String,
       default: _EDIT
     },
+
     value: {
       type:     Object,
       required: true

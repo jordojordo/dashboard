@@ -24,10 +24,12 @@ export default {
       type:    String,
       default: _CREATE,
     },
+
     resource: {
       type:    String,
       default: null
     },
+
     value: {
       type:     Object,
       required: true,

@@ -4,7 +4,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import merge from 'lodash/merge';
 import isEmpty from 'lodash/isEmpty';
 import { mapGetters } from 'vuex';
-import { NAMESPACE_SELECTOR } from '@/plugins/kubewarden/policy-class';
+import { NAMESPACE_SELECTOR, RESOURCE_MAP } from '@/plugins/kubewarden/policy-class';
 import ChartMixin from '@/mixins/chart';
 import CreateEditView from '@/mixins/create-edit-view';
 import {
@@ -120,7 +120,9 @@ export default ({
           label: 'Service',
           value: 'Service'
         }
-      ]
+      ],
+
+      RESOURCE_MAP
     };
   },
 
@@ -220,22 +222,6 @@ export default ({
   },
 
   methods: {
-    selectType(type) {
-      this.type = type;
-
-      this.$router.push({
-        query: {
-          [REPO]:      'kubewarden',
-          [REPO_TYPE]: 'cluster',
-          [CHART]:     type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, ''),
-        }
-      });
-
-      this.policyQuestions();
-      this.stepBasic.ready = true;
-      this.$refs.wizard.next();
-    },
-
     cancel() {
       this.done();
     },
@@ -276,12 +262,6 @@ export default ({
       }
     },
 
-    refresh() {
-      this.keywords = [];
-      this.category = null;
-      this.searchQuery = null;
-    },
-
     policyQuestions() {
       const shortType = this.type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '');
       const match = require(`@/.questions/policies/${ shortType }.json`);
@@ -298,7 +278,33 @@ export default ({
           set(this.chartValues.questions, 'questions', questionsMatch);
         }
       }
-    }
+    },
+
+    refresh() {
+      this.keywords = [];
+      this.category = null;
+      this.searchQuery = null;
+    },
+
+    resourceColor(type) {
+      return this.RESOURCE_MAP[type.toLowerCase()];
+    },
+
+    selectType(type) {
+      this.type = type;
+
+      this.$router.push({
+        query: {
+          [REPO]:      'kubewarden',
+          [REPO_TYPE]: 'cluster',
+          [CHART]:     type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, ''),
+        }
+      });
+
+      this.policyQuestions();
+      this.stepBasic.ready = true;
+      this.$refs.wizard.next();
+    },
   }
 
 });
@@ -343,7 +349,7 @@ export default ({
               :options="categories"
               placement="bottom"
               class="filter__category"
-              label="Filter by Service Type"
+              label="Filter by Resource Type"
               :reduce="opt => opt.value"
             >
               <template #option="opt">
@@ -377,7 +383,7 @@ export default ({
               @click="selectType(subtype.id, $event)"
             >
               <div class="subtype__metadata">
-                <div class="subtype__badge">
+                <div class="subtype__badge" :style="{ 'background-color': resourceColor(subtype.resourceType) }">
                   <label>{{ subtype.resourceType }}</label>
                 </div>
 
@@ -507,9 +513,10 @@ export default ({
 
       &__badge {
         position: absolute;
+        right: 0;
+        top: 0;
         padding: 2px 10px;
-        background-color: var(--app-rancher-accent);
-        border-radius: calc( 1.5 * var(--border-radius));
+        border-bottom-left-radius: var(--border-radius);
 
         label {
           font-size: 12px;

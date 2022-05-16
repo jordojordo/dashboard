@@ -13,6 +13,7 @@ export default {
       type:    String,
       default: _VIEW
     },
+
     value: {
       type:     Object,
       required: true

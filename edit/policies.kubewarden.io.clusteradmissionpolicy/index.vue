@@ -15,10 +15,12 @@ export default {
       type:     Object,
       required: true
     },
+
     mode: {
       type:    String,
       default: _EDIT
     },
+
     realMode: {
       type:    String,
       default: _EDIT

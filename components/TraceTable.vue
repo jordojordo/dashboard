@@ -1,8 +1,10 @@
 <script>
 import { TRACE_HEADERS, OPERATION_MAP } from '@/plugins/kubewarden/policy-class';
 import { KUBEWARDEN } from '@/config/types';
+import { isEmpty } from '@/utils/object';
 
 import BadgeState from '@/components/BadgeState';
+import Banner from '@/components/Banner';
 import SortableTable from '@/components/SortableTable';
 
 export default {
@@ -13,7 +15,9 @@ export default {
     }
   },
 
-  components: { BadgeState, SortableTable },
+  components: {
+    BadgeState, Banner, SortableTable
+  },
 
   data() {
     return {
@@ -35,9 +39,13 @@ export default {
       return this.$route.params.resource === KUBEWARDEN.POLICY_SERVER;
     },
 
+    noRows() {
+      return isEmpty(this.rows);
+    },
+
     rowsPerPage() {
       if ( !!this.isPolicyServer ) {
-        return 50;
+        return 100;
       }
 
       return 10;
@@ -57,59 +65,66 @@ export default {
 </script>
 
 <template>
-  <SortableTable
-    :rows="rows"
-    :headers="TRACE_HEADERS"
-    :group-by="groupField"
-    :table-actions="false"
-    :row-actions="false"
-    key-field="traceID"
-    default-sort-by="startTime"
-    :sub-expandable="true"
-    :sub-expand-column="true"
-    :sub-rows="true"
-    :paging="true"
-    :rows-per-page="rowsPerPage"
-  >
-    <template #col:operation="{row}">
-      <td>
-        <BadgeState
-          :label="row.operation"
-          :color="color(row.operation)"
-        />
-      </td>
-    </template>
-    <template #sub-row="{row, fullColspan}">
-      <td :colspan="fullColspan" class="sub-row">
-        <div class="details">
-          <section class="col">
-            <div class="title">
-              Response Message
-            </div>
-            <span class="text-warning">
-              {{ capitalizeMessage(row.response_message) }}
-            </span>
-          </section>
-          <section class="col">
-            <div class="title">
-              Response Code
-            </div>
-            <span class="text-info">
-              {{ row.response_code ? row.response_code : 'N/A' }}
-            </span>
-          </section>
-          <section class="col">
-            <div class="title">
-              Mutated
-            </div>
-            <span class="text-info">
-              {{ row.mutated }}
-            </span>
-          </section>
-        </div>
-      </td>
-    </template>
-  </SortableTable>
+  <div>
+    <Banner v-if="noRows" color="info">
+      <span v-if="isPolicyServer">No tracing data exists for the related policies.</span>
+      <span v-else>No tracing data exists for this policy.</span>
+    </Banner>
+
+    <SortableTable
+      :rows="rows"
+      :headers="TRACE_HEADERS"
+      :group-by="groupField"
+      :table-actions="false"
+      :row-actions="false"
+      key-field="traceID"
+      default-sort-by="startTime"
+      :sub-expandable="true"
+      :sub-expand-column="true"
+      :sub-rows="true"
+      :paging="true"
+      :rows-per-page="rowsPerPage"
+    >
+      <template #col:operation="{row}">
+        <td>
+          <BadgeState
+            :label="row.operation"
+            :color="color(row.operation)"
+          />
+        </td>
+      </template>
+      <template #sub-row="{row, fullColspan}">
+        <td :colspan="fullColspan" class="sub-row">
+          <div class="details">
+            <section class="col">
+              <div class="title">
+                Response Message
+              </div>
+              <span class="text-warning">
+                {{ capitalizeMessage(row.response_message) }}
+              </span>
+            </section>
+            <section class="col">
+              <div class="title">
+                Response Code
+              </div>
+              <span class="text-info">
+                {{ row.response_code ? row.response_code : 'N/A' }}
+              </span>
+            </section>
+            <section class="col">
+              <div class="title">
+                Mutated
+              </div>
+              <span class="text-info">
+                {{ row.mutated }}
+              </span>
+            </section>
+          </div>
+        </td>
+      </template>
+    </SortableTable>
+  </div>
 </template>
 
 <style lang="scss" scoped>

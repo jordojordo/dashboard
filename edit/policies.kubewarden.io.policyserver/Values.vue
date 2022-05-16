@@ -11,10 +11,12 @@ export default {
       type:    String,
       default: _CREATE
     },
+
     chartValues: {
       type:     Object,
       required: true
     },
+
     value: {
       type:     Object,
       required: true

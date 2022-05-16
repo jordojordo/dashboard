@@ -28,7 +28,7 @@ export default {
   computed: {
     headers() {
       return this.$store.getters['type-map/headersFor'](this.schema);
-    },
+    }
   }
 };
 </script>
@@ -36,6 +36,14 @@ export default {
 <template>
   <Loading v-if="$fetchState.pending" />
   <div v-else>
-    <ResourceTable :schema="schema" :rows="rows" :headers="headers" />
+    <ResourceTable :schema="schema" :rows="rows" :headers="headers">
+      <template #col:mode="{ row }">
+        <td>
+          <span class="policy__mode">
+            <span class="text-capitalize">{{ row.spec.mode }}</span>
+          </span>
+        </td>
+      </template>
+    </ResourceTable>
   </div>
 </template>

@@ -14,10 +14,7 @@ export default {
   name: 'AdmissionPolicy',
 
   components: {
-    DashboardMetrics,
-    ResourceTabs,
-    Tab,
-    TraceTable
+    DashboardMetrics, ResourceTabs, Tab, TraceTable
   },
 
   mixins: [CreateEditView],
@@ -27,10 +24,12 @@ export default {
       type:    String,
       default: _CREATE,
     },
+
     resource: {
       type:    String,
       default: null
     },
+
     value: {
       type:     Object,
       required: true,
