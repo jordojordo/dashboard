@@ -34,9 +34,10 @@ export default {
         <NameNsDescription
           :mode="mode"
           :value="value"
-          :namespaced="false"
+          :namespaced="true"
           :description-hidden="true"
           name-key="metadata.name"
+          namespace-key="metadata.namespace"
         />
       </div>
     </div>
