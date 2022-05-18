@@ -29,6 +29,10 @@ export default {
     if ( !!this.value.policy ) {
       this.rules = this.value.policy.spec.rules[0];
     }
+
+    if ( this.rules.resources ) {
+      this.resourceOptions = this.rules.resources;
+    }
   },
 
   data() {
@@ -41,6 +45,8 @@ export default {
     return {
       apiGroups: [],
       rules:     null,
+
+      resourceOptions: [],
       operationOptions
     };
   },
@@ -85,11 +91,13 @@ export default {
     </div>
     <div class="row mb-20">
       <div class="col span-6">
-        <LabeledInput
+        <LabeledSelect
           v-model="rules.resources"
           label="Resources"
           :mode="mode"
-          tooltip="The targeted resources for the policy."
+          :multiple="true"
+          :options="resourceOptions"
+          tooltip="The targeted resources for the policy. A resource that is supported by the policy is determined in the `metadata.yml` of the selected policy."
         />
       </div>
     </div>
