@@ -1,6 +1,7 @@
 <script>
 import { _CREATE } from '@/config/query-params';
 import { CAPI, SERVICE_ACCOUNT } from '@/config/types';
+import { RELEASE_NAMESPACE } from '@/config/labels-annotations';
 import { allHash } from '@/utils/promise';
 
 import LabeledInput from '@/components/form/LabeledInput';
@@ -39,7 +40,11 @@ export default {
 
     this.serviceAccounts = hash.serviceAccount || [];
 
-    this.selectedNamespace = this.value?.metadata?.namespace;
+    if ( this.isCreate ) {
+      this.selectedNamespace = this.value?.metadata?.namespace || null;
+    } else {
+      this.selectedNamespace = this.value?.metadata?.annotations?.[RELEASE_NAMESPACE];
+    }
   },
 
   data() {
@@ -52,9 +57,27 @@ export default {
   },
 
   computed: {
-    namespacedServiceNames() {
-      // const { namespace } = this.value?.metadata;
+    forceNamespace() {
+      if ( this.isCreate ) {
+        return null;
+      }
 
+      return this.value?.metadata?.annotations?.[RELEASE_NAMESPACE];
+    },
+
+    isCreate() {
+      return this.mode === _CREATE;
+    },
+
+    namespaceKey() {
+      if ( this.isCreate) {
+        return 'metadata.namespace';
+      }
+
+      return `metadata.annotations['${ RELEASE_NAMESPACE }']`;
+    },
+
+    namespacedServiceNames() {
       if ( this.selectedNamespace ) {
         return this.serviceAccounts.filter(s => s.metadata.namespace === this.selectedNamespace);
       }
@@ -81,11 +104,13 @@ export default {
           :namespaced="true"
           :description-hidden="true"
           name-key="metadata.name"
-          namespace-key="metadata.namespace"
+          :force-namespace="forceNamespace"
+          :namespace-key="namespaceKey"
           @change="handleChangeNamespace($event)"
         />
       </div>
     </div>
+
     <div class="row">
       <div class="col span-6">
         <RadioGroup
@@ -108,8 +133,6 @@ export default {
         </template>
       </div>
     </div>
-
-    <div class="spacer"></div>
 
     <div class="row">
       <div class="col span-12">
