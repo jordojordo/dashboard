@@ -65,7 +65,6 @@ export default {
 
         await this.save();
       } catch (e) {
-        console.error(`Error when saving: ${ e }`); // eslint-disable-line no-console
         this.errors.push(e);
       }
     },
@@ -90,6 +89,7 @@ export default {
     :resource="value"
     :mode="realMode"
     :done-route="doneRoute"
+    :errors="errors"
     :generate-yaml="generateYaml"
     @finish="finish"
   >

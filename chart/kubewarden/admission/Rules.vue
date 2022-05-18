@@ -97,7 +97,7 @@ export default {
           :mode="mode"
           :multiple="true"
           :options="resourceOptions"
-          tooltip="The targeted resources for the policy. A resource that is supported by the policy is determined in the `metadata.yml` of the selected policy."
+          tooltip="The targeted resources for the policy. Needs to be a resource that is supported by the policy, this is determined in the `metadata.yml` of the selected policy."
         />
       </div>
     </div>

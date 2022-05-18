@@ -13,6 +13,7 @@ export default {
       type:    String,
       default: _CREATE
     },
+
     value: {
       type:     Object,
       required: true

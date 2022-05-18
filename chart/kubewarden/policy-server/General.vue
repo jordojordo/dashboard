@@ -1,9 +1,12 @@
 <script>
 import { _CREATE } from '@/config/query-params';
+import { CAPI, SERVICE_ACCOUNT } from '@/config/types';
+import { allHash } from '@/utils/promise';
 
 import LabeledInput from '@/components/form/LabeledInput';
 import NameNsDescription from '@/components/form/NameNsDescription';
 import RadioGroup from '@/components/form/RadioGroup';
+import ServiceNameSelect from '@/components/form/ServiceNameSelect';
 
 export default {
   props: {
@@ -11,6 +14,7 @@ export default {
       type:    String,
       default: _CREATE
     },
+
     value: {
       type:     Object,
       required: true
@@ -18,11 +22,51 @@ export default {
   },
 
   components: {
-    LabeledInput, NameNsDescription, RadioGroup
+    LabeledInput, NameNsDescription, RadioGroup, ServiceNameSelect
+  },
+
+  async fetch() {
+    const requests = { rancherClusters: this.$store.dispatch('management/findAll', { type: CAPI.RANCHER_CLUSTER }) };
+
+    // Only fetch types if the user can see them
+    if ( this.$store.getters['cluster/schemaFor'](SERVICE_ACCOUNT) ) {
+      Object.assign(requests, { serviceAccount: SERVICE_ACCOUNT });
+
+      requests.serviceAccount = this.$store.dispatch('cluster/findAll', { type: SERVICE_ACCOUNT });
+    }
+
+    const hash = await allHash(requests);
+
+    this.serviceAccounts = hash.serviceAccount || [];
+
+    this.selectedNamespace = this.value?.metadata?.namespace;
   },
 
   data() {
-    return { defaultImage: true };
+    return {
+      defaultImage:          true,
+      defaultServiceAccount: this.value.spec.serviceAccountName,
+      selectedNamespace:     null,
+      serviceAccounts:       [],
+    };
+  },
+
+  computed: {
+    namespacedServiceNames() {
+      // const { namespace } = this.value?.metadata;
+
+      if ( this.selectedNamespace ) {
+        return this.serviceAccounts.filter(s => s.metadata.namespace === this.selectedNamespace);
+      }
+
+      return this.serviceAccounts;
+    },
+  },
+
+  methods: {
+    handleChangeNamespace(neu) {
+      this.$set(this, 'selectedNamespace', neu);
+    }
   }
 };
 </script>
@@ -38,6 +82,7 @@ export default {
           :description-hidden="true"
           name-key="metadata.name"
           namespace-key="metadata.namespace"
+          @change="handleChangeNamespace($event)"
         />
       </div>
     </div>
@@ -67,14 +112,15 @@ export default {
     <div class="spacer"></div>
 
     <div class="row">
-      <div class="col span-6">
-        <h3>
-          Service Account Name
-        </h3>
-        <LabeledInput
+      <div class="col span-12">
+        <ServiceNameSelect
           v-model="value.spec.serviceAccountName"
           :mode="mode"
-          label="ServiceAccount Name"
+          :select-label="t('workload.serviceAccountName.label')"
+          :select-placeholder="t('workload.serviceAccountName.label')"
+          :options="namespacedServiceNames"
+          :default-option="value.spec.serviceAccountName"
+          option-label="metadata.name"
         />
       </div>
     </div>

@@ -56,7 +56,6 @@ export default {
       try {
         await this.save();
       } catch (e) {
-        console.error(`Error when saving: ${ e }`); // eslint-disable-line no-console
         this.errors.push(e);
       }
     },
@@ -70,6 +69,7 @@ export default {
     v-else
     :resource="value"
     :mode="realMode"
+    :errors="errors"
     @finish="finish"
   >
     <Config :value="value" :mode="mode" />
