@@ -50,7 +50,7 @@ export default {
   data() {
     return {
       defaultImage:          true,
-      defaultServiceAccount: this.value.spec.serviceAccountName,
+      defaultServiceAccount: this.value?.spec?.serviceAccountName || null,
       selectedNamespace:     null,
       serviceAccounts:       [],
     };

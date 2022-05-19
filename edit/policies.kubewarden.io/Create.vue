@@ -237,7 +237,7 @@ export default ({
       });
     },
 
-    async finish() {
+    async finish(event) {
       try {
         // This won't be necessary if we can get the policy to automatically apply a default value for this property
         if ( isEmpty(this.chartValues?.policy?.spec?.rules[0]?.apiGroups) ) {
@@ -255,9 +255,8 @@ export default ({
 
         merge(this.value, out);
 
-        await this.save();
+        await this.save(event);
       } catch (e) {
-        console.error(`Error when saving: ${ e }`); // eslint-disable-line no-console
         this.errors.push(e);
       }
     },

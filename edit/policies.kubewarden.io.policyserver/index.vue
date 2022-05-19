@@ -52,13 +52,13 @@ export default {
   },
 
   methods: {
-    async finish() {
+    async finish(event) {
       try {
-        await this.save();
+        await this.save(event);
       } catch (e) {
         this.errors.push(e);
       }
-    },
+    }
   }
 };
 </script>

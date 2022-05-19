@@ -53,7 +53,7 @@ export default {
   },
 
   methods: {
-    async finish() {
+    async finish(event) {
       try {
         if ( this.chartValues?.questions?.spec?.sourceAuthorities ) {
           const s = this.chartValues.questions.spec.sourceAuthorities.split();
@@ -63,7 +63,7 @@ export default {
 
         merge(this.value, this.chartValues?.questions);
 
-        await this.save();
+        await this.save(event);
       } catch (e) {
         this.errors.push(e);
       }

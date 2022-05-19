@@ -48,11 +48,10 @@ export default {
   },
 
   methods: {
-    async finish() {
+    async finish(event) {
       try {
-        await this.save();
+        await this.save(event);
       } catch (e) {
-        console.error(`Error when saving: ${ e }`); // eslint-disable-line no-console
         this.errors.push(e);
       }
     },
