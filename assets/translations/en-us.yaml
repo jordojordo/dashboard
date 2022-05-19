@@ -2372,6 +2372,13 @@ kubewarden:
       resourceType: Global
       keywords: |
         Labels
+    seccomp-psp:
+      name: Seccomp PSP
+      description: Pod Security Policy that controls usage of Seccomp profile
+      resourceType: Pod
+      keywords: |
+        PSP
+        seccomp
     selinux-psp:
       name: SELinux PSP
       description: Replacement for the Kubernetes Pod Security Policy that controls the usage of SELinux

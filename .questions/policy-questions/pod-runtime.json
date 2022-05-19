@@ -1,7 +1,8 @@
 [
   {
     "default": [],
-    "description": "Give the explicit request to use a specific runtime.",
+    "description": "This policy can be used to inspect `CREATE` and `UPDATE` requests of `Pod` resources, and can be configured to replace a non-valid runtime with a fall-back one.",
+    "tooltip": "Give the explicit request to use a specific runtime.",
     "group": "Settings",
     "label": "Reserved Runtimes",
     "required": false,

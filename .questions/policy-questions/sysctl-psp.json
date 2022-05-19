@@ -1,5 +1,14 @@
 [
   {
+    "default": null,
+    "description": "This policy validates which sysctls can get set in pods by specifying lists of sysctls or sysctl patterns to be allowed or forbidden. You can then modify the securityContext of Pods to make use of the Sysctls as permitted by this policy.",
+    "group": "Settings",
+    "required": false,
+    "targeted": false,
+    "type": "map",
+    "variable": "description"
+  },
+  {
     "default": [],
     "description": "A list of plain sysctl names or sysctl patterns (which end with *) to be forbidden. You can forbid a combination of safe and unsafe sysctls in the list. To forbid setting any sysctls, use * on its own.",
     "group": "Settings",

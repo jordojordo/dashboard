@@ -71,6 +71,7 @@ export function init(store) {
           readonly_root_filesystem_psp:   { type: SPOOFED.READONLY_ROOT_FILESYSTEM_PSP },
           safe_annotations:               { type: SPOOFED.SAFE_ANNOTATIONS },
           safe_labels:                    { type: SPOOFED.SAFE_LABELS },
+          seccomp_psp:                    { type: SPOOFED.SECCOMP_PSP },
           selinux_psp:                    { type: SPOOFED.SELINUX_PSP },
           sysctl_psp:                     { type: SPOOFED.SYSCTL_PSP },
           trusted_repos:                  { type: SPOOFED.TRUSTED_REPOS },

@@ -300,6 +300,7 @@ export const KUBEWARDEN = {
     READONLY_ROOT_FILESYSTEM_PSP:   'policies.kubewarden.io.policies.readonly-root-filesystem-psp',
     SAFE_ANNOTATIONS:               'policies.kubewarden.io.policies.safe-annotations',
     SAFE_LABELS:                    'policies.kubewarden.io.policies.safe-labels',
+    SECCOMP_PSP:                    'policies.kubewarden.io.policies.seccomp-psp',
     SELINUX_PSP:                    'policies.kubewarden.io.policies.selinux-psp',
     SYSCTL_PSP:                     'policies.kubewarden.io.policies.sysctl-psp',
     TRUSTED_REPOS:                  'policies.kubewarden.io.policies.trusted-repos',

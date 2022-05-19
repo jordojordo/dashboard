@@ -53,6 +53,10 @@ export default {
   },
 
   methods: {
+    clearErrors() {
+      this.errors = [];
+    },
+
     async finish(event) {
       try {
         if ( this.chartValues?.questions?.spec?.sourceAuthorities ) {
@@ -77,7 +81,7 @@ export default {
       const out = createYaml(schemas, this.value.type, cloned);
 
       return out;
-    },
+    }
   }
 };
 </script>
@@ -92,6 +96,7 @@ export default {
     :errors="errors"
     :generate-yaml="generateYaml"
     @finish="finish"
+    @error="clearErrors"
   >
     <Values :value="value" :chart-values="chartValues" :mode="mode" />
   </CruResource>

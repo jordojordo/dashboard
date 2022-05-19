@@ -1,6 +1,16 @@
 [
   {
+    "default": null,
+    "description": "This policy allows you to restrict what repositories, tags, and images pods in your cluster can refer to. The configuration allows you to mix and match several filters: registries, tags, and images. When both an allow list and a reject list is supported, only one can be provided at the same time for that specific filter.",
+    "group": "Settings",
+    "required": false,
+    "targeted": false,
+    "type": "map",
+    "variable": "description"
+  },
+  {
     "default": [],
+    "description": "Allow or reject images coming from a specified registry.",
     "group": "Settings",
     "label": "Registries",
     "target": false,
@@ -25,6 +35,7 @@
   },
   {
     "default": [],
+    "description": "Reject a specified tag for all images",
     "group": "Settings",
     "label": "Tags",
     "target": false,
@@ -42,6 +53,7 @@
   },
   {
     "default": [],
+    "description": "Accept or reject a specified image",
     "group": "Settings",
     "label": "Images",
     "target": false,

@@ -1,29 +1,32 @@
 [
   {
-    "default": true,
+    "default": null,
+    "description": "This policy validates Sigstore signatures for containers, init container and ephemeral container that match the name provided in the image settings field. It will reject the Pod if any validation fails. If all signature validation pass or there is no container that matches the image name, the Pod will be accepted.",
+    "group": "Settings",
+    "required": false,
+    "targeted": false,
+    "type": "map",
+    "variable": "description"
+  },
+  {
+    "default": "PublicKey",
+    "description": "The policy takes a list of signatures. A signature can be of two types: public key or keyless. Each signature has an image field which will be used to select the matching containers in the pod that will be evaluated. image supports wildcard. For example, ghcr.io/kubewarden/* will match all images from the kubewarden ghcr repo.",
+    "group": "Settings",
+    "label": "Signature Type",
+    "options": [
+      "PublicKey",
+      "Keyless"
+    ],
+    "required": false,
+    "type": "enum",
+    "variable": "rule"
+  },
+  {
+    "default": [],
     "description": "",
     "group": "Settings",
-    "label": "Modify images with digest",
-    "required": false,
-    "type": "boolean",
-    "variable": "modifyImagesWithDigest"
-  },
-  {
-    "default": [],
-    "group": "Settings",
-    "label": "Signatures",
-    "target": false,
-    "tooltip": "A signature can be of two types: public key or keyless. Each signature has an image field which will be used to select the matching containers in the pod that will be evaluated. image supports wildcard. For example, ghcr.io/kubewarden/* will match all images from the kubewarden ghcr repo.",
-    "type": "map",
-    "variable": "signatures",
-    "subquestions": [
-
-    ]
-  },
-  {
-    "default": [],
-    "group": "Settings",
     "label": "Public key signature",
+    "show_if": "rule=PublicKey",
     "target": false,
     "type": "map",
     "variable": "signatures",
@@ -32,6 +35,7 @@
         "default": "",
         "group": "Settings",
         "label": "Image",
+        "show_if": "rule=PublicKey",
         "type": "string",
         "variable": "signatures.image"
       },
@@ -39,6 +43,7 @@
         "default": [],
         "group": "Settings",
         "label": "Public keys",
+        "show_if": "rule=PublicKey",
         "type": "array[",
         "variable": "signatures.pubKeys"
       },
@@ -46,6 +51,7 @@
         "default": [],
         "group": "Settings",
         "label": "Annotations",
+        "show_if": "rule=PublicKey",
         "type": "map[",
         "variable": "signatures.annotations"
       }
@@ -55,6 +61,7 @@
     "default": [],
     "group": "Settings",
     "label": "Keyless signature",
+    "show_if": "rule=Keyless",
     "target": false,
     "type": "map",
     "variable": "signatures",
@@ -63,6 +70,7 @@
         "default": "",
         "group": "Settings",
         "label": "Image",
+        "show_if": "rule=Keyless",
         "type": "string",
         "variable": "signatures.image"
       },
@@ -71,6 +79,7 @@
         "group": "Settings",
         "label": "Keyless",
         "target": false,
+        "show_if": "rule=Keyless",
         "type": "map",
         "variable": "signatures.keyless",
         "subquestions": [
@@ -78,6 +87,7 @@
             "default": "",
             "group": "Settings",
             "label": "Issuer",
+            "show_if": "rule=Keyless",
             "type": "string",
             "variable": "signatures.keyless.issuer"
           },
@@ -85,6 +95,7 @@
             "default": "",
             "group": "Settings",
             "label": "Subject",
+            "show_if": "rule=Keyless",
             "type": "string",
             "variable": "signatures.keyless.subject"
           }
@@ -94,9 +105,20 @@
         "default": [],
         "group": "Settings",
         "label": "Annotations",
+        "show_if": "rule=Keyless",
         "type": "map[",
         "variable": "signatures.annotations"
       }
     ]
+  },
+  {
+    "default": true,
+    "tooltip": "This policy also mutates matching images to add the image digest, therefore the version of the deployed image can't change. This mutation can be disabled by setting modifyImagesWithDigest to false.",
+    "group": "Settings",
+    "label": "modifyImagesWithDigest",
+    "required": false,
+    "title": "Modify images with digest",
+    "type": "boolean",
+    "variable": "modifyImagesWithDigest"
   }
 ]
