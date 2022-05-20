@@ -52,6 +52,17 @@ export default {
       return desc && desc !== label;
     },
 
+    showInput() {
+      const type = this.question?.type;
+      const target = this.question?.target;
+
+      if ( type === 'map' && !target ) {
+        return false;
+      }
+
+      return true;
+    },
+
     displayDescription() {
       const variable = this.question?.variable;
 

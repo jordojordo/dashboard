@@ -1,0 +1,558 @@
+<script>
+import jsyaml from 'js-yaml';
+import cloneDeep from 'lodash/cloneDeep';
+import merge from 'lodash/merge';
+import isEmpty from 'lodash/isEmpty';
+import { mapGetters } from 'vuex';
+import { NAMESPACE_SELECTOR, RESOURCE_MAP } from '@/plugins/kubewarden/policy-class';
+import ChartMixin from '@/mixins/chart';
+import CreateEditView from '@/mixins/create-edit-view';
+import {
+  CATEGORY, _CREATE, CHART, REPO, REPO_TYPE, SEARCH_QUERY
+} from '@/config/query-params';
+import { KUBEWARDEN } from '@/config/types';
+import { saferDump } from '@/utils/create-yaml';
+import { ensureRegex } from '@/utils/string';
+import { sortBy } from '@/utils/sort';
+import { set } from '@/utils/object';
+
+import ButtonGroup from '@/components/ButtonGroup';
+import LabeledSelect from '@/components/form/LabeledSelect';
+import Loading from '@/components/Loading';
+import ResourceCancelModal from '@/components/ResourceCancelModal';
+import Select from '@/components/form/Select';
+import Tabbed from '@/components/Tabbed';
+import Wizard from '@/components/Wizard';
+import Values from '@/edit/policies.kubewarden.io/Values';
+
+import defaultPolicy from '@/.questions/defaultPolicy.json';
+
+export default ({
+  name: 'Create',
+
+  components: {
+    ButtonGroup, LabeledSelect, Loading, ResourceCancelModal, Select, Tabbed, Wizard, Values
+  },
+
+  props: {
+    mode: {
+      type:    String,
+      default: _CREATE
+    },
+    value: {
+      type:     Object,
+      required: true
+    },
+  },
+
+  mixins: [ChartMixin, CreateEditView],
+
+  async fetch() {
+    this.errors = [];
+
+    try {
+      // Without importing this here the object would maintain the state
+      this.questions = await import(/* webpackChunkName: "questions-data" */ '@/.questions/questions.json');
+
+      const _questions = cloneDeep(JSON.parse(JSON.stringify(this.questions)));
+
+      // This object will need to be refactored when helm charts exist for policies
+      this.chartValues = { questions: _questions };
+    } catch (e) {
+      console.error(`Error importing questions ${ e }`); // eslint-disable-line no-console
+    }
+
+    this.yamlValues = saferDump(defaultPolicy);
+
+    this.value.apiVersion = `${ this.schema?.attributes?.group }.${ this.schema?.attributes?.version }`;
+    this.value.kind = this.schema?.attributes?.kind;
+
+    const query = this.$route.query;
+
+    this.searchQuery = query[SEARCH_QUERY] || '';
+    this.category = query[CATEGORY] || '';
+  },
+
+  data() {
+    return {
+      questions:    null,
+      errors:       null,
+      category:     null,
+      keywords:     [],
+      searchQuery:  null,
+      type:         null,
+      version:      null,
+
+      chartValues:  null,
+      yamlValues:   null,
+
+      stepBasic: {
+        name:   'basics',
+        label:  'Policies',
+        ready:  false,
+        weight: 30
+      },
+      stepValues: {
+        name:   'values',
+        label:  'Values',
+        ready:  true,
+        weight: 20
+      },
+
+      categories: [
+        {
+          label: 'All',
+          value: ''
+        },
+        {
+          label: '*',
+          value: 'Global'
+        },
+        {
+          label: 'Ingress',
+          value: 'Ingress'
+        },
+        {
+          label: 'Pod',
+          value: 'Pod'
+        },
+        {
+          label: 'Service',
+          value: 'Service'
+        }
+      ],
+
+      RESOURCE_MAP
+    };
+  },
+
+  provide() {
+    return { chartType: this.value.type };
+  },
+
+  computed: {
+    ...mapGetters(['currentCluster']),
+    ...mapGetters({ t: 'i18n/t' }),
+
+    isCreate() {
+      return this.realMode === _CREATE;
+    },
+
+    isSelected() {
+      return !!this.type;
+    },
+
+    filteredSubtypes() {
+      const subtypes = (this.subtypes || []);
+
+      const out = subtypes.filter((subtype) => {
+        if ( this.category && !subtype.resourceType.includes(this.category) ) {
+          return false;
+        }
+
+        if ( this.searchQuery ) {
+          const searchTokens = this.searchQuery.split(/\s*[, ]\s*/).map(x => ensureRegex(x, false));
+
+          for ( const token of searchTokens ) {
+            if ( !subtype.label.match(token) && (subtype.description && !subtype.description.match(token)) ) {
+              return false;
+            }
+          }
+        }
+
+        if ( this.keywords ) {
+          for ( const selected of this.keywords ) {
+            if ( !subtype.keywords.includes(selected) ) {
+              return false;
+            }
+          }
+        }
+
+        return true;
+      });
+
+      return sortBy(out, ['category', 'label', 'description']);
+    },
+
+    keywordOptions() {
+      const flattened = this.subtypes.flatMap((subtype) => {
+        return subtype.keywords;
+      });
+
+      return [...new Set(flattened)];
+    },
+
+    steps() {
+      const steps = [];
+
+      steps.push(
+        this.stepBasic,
+        this.stepValues
+      );
+
+      return steps.sort((a, b) => b.weight - a.weight);
+    },
+
+    subtypes() {
+      const out = [];
+      const { SPOOFED } = KUBEWARDEN;
+
+      for ( const key in SPOOFED ) {
+        const type = SPOOFED[key];
+
+        if ( type !== SPOOFED.POLICIES && type !== SPOOFED.POLICY ) {
+          const shortType = type.replace(`${ SPOOFED.POLICIES }.`, '');
+          const resourceType = this.t(`kubewarden.policyCharts.${ shortType }.resourceType`);
+
+          const subtype = {
+            key,
+            resourceType,
+            id:           type,
+            label:        this.t(`kubewarden.policyCharts.${ shortType }.name`),
+            description:  this.t(`kubewarden.policyCharts.${ shortType }.description`),
+            keywords:     this.t(`kubewarden.policyCharts.${ shortType }.keywords`).split('\n').slice(0, -1)
+          };
+
+          out.push(subtype);
+        }
+      }
+
+      return out;
+    },
+  },
+
+  methods: {
+    cancel() {
+      this.done();
+    },
+
+    done() {
+      this.$router.replace({
+        name:   'c-cluster-product-resource',
+        params: {
+          cluster:  this.$route.params.cluster,
+          product:  'kubewarden',
+          resource: this.schema?.id
+        }
+      });
+    },
+
+    async finish(event) {
+      try {
+        // This won't be necessary if we can get the policy to automatically apply a default value for this property
+        if ( isEmpty(this.chartValues?.policy?.spec?.rules[0]?.apiGroups) ) {
+          this.chartValues.policy.spec.rules[0].apiGroups.push('');
+        }
+
+        const { ignoreRancherNamespaces } = this.chartValues.policy;
+
+        if ( ignoreRancherNamespaces ) {
+          set(this.chartValues.policy.spec, 'namespaceSelector', { matchExpressions: [NAMESPACE_SELECTOR] });
+          delete this.chartValues.policy.ignoreRancherNamespaces;
+        }
+
+        const out = this.chartValues?.policy ? this.chartValues.policy : jsyaml.load(this.yamlValues);
+
+        merge(this.value, out);
+
+        await this.save(event);
+      } catch (e) {
+        this.errors.push(e);
+      }
+    },
+
+    policyQuestions() {
+      const shortType = this.type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, '');
+      const match = require(`@/.questions/policies/${ shortType }.json`);
+
+      if ( match ) {
+        set(this.chartValues, 'policy', match);
+      }
+
+      // Spoofing the questions object from hard-typed questions json for each policy
+      if ( match?.spec?.settings && !isEmpty(match.spec.settings) ) {
+        const questionsMatch = require(`@/.questions/policy-questions/${ shortType }.json`);
+
+        if ( questionsMatch ) {
+          set(this.chartValues.questions, 'questions', questionsMatch);
+        }
+      }
+    },
+
+    refresh() {
+      this.keywords = [];
+      this.category = null;
+      this.searchQuery = null;
+    },
+
+    resourceColor(type) {
+      return this.RESOURCE_MAP[type.toLowerCase()];
+    },
+
+    selectType(type) {
+      this.type = type;
+
+      this.$router.push({
+        query: {
+          [REPO]:      'kubewarden',
+          [REPO_TYPE]: 'cluster',
+          [CHART]:     type.replace(`${ KUBEWARDEN.SPOOFED.POLICIES }.`, ''),
+        }
+      });
+
+      this.policyQuestions();
+      this.stepBasic.ready = true;
+      this.$refs.wizard.next();
+    },
+  }
+
+});
+</script>
+
+<template>
+  <Loading v-if="$fetchState.pending" mode="relative" />
+  <div v-else>
+    <Wizard
+      v-if="value"
+      ref="wizard"
+      v-model="value"
+      :errors="errors"
+      :steps="steps"
+      :edit-first-step="true"
+      class="wizard"
+      @cancel="cancel"
+      @finish="finish"
+    >
+      <template #basics>
+        <form
+          :is="( isView ? 'div' : 'form' )"
+          class="create-resource-container step__basic"
+        >
+          <div class="filter">
+            <LabeledSelect
+              v-model="keywords"
+              :clearable="true"
+              :taggable="true"
+              :mode="mode"
+              :multiple="true"
+              class="filter__keywords"
+              label="Filter by Keyword"
+              :options="keywordOptions"
+              :disabled="isView"
+            />
+
+            <LabeledSelect
+              v-model="category"
+              :clearable="true"
+              :searchable="false"
+              :options="categories"
+              placement="bottom"
+              class="filter__category"
+              label="Filter by Resource Type"
+              :reduce="opt => opt.value"
+            >
+              <template #option="opt">
+                {{ opt.label }}
+              </template>
+            </LabeledSelect>
+
+            <input
+              ref="searchQuery"
+              v-model="searchQuery"
+              type="search"
+              class="input-sm filter__search"
+              :placeholder="t('catalog.charts.search')"
+            >
+
+            <button
+              ref="btn"
+              class="btn, btn-sm, role-primary"
+              type="button"
+              @click="refresh"
+            >
+              <i class="icon, icon-lg, icon-close" />
+            </button>
+          </div>
+
+          <div class="grid">
+            <div
+              v-for="subtype in filteredSubtypes"
+              :key="subtype.id"
+              class="subtype"
+              @click="selectType(subtype.id, $event)"
+            >
+              <div class="subtype__metadata">
+                <div class="subtype__badge" :style="{ 'background-color': resourceColor(subtype.resourceType) }">
+                  <label>{{ subtype.resourceType }}</label>
+                </div>
+
+                <h4 class="subtype__label">
+                  {{ subtype.label }}
+                </h4>
+
+                <div v-if="subtype.description" class="subtype__description">
+                  {{ subtype.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </template>
+
+      <template #values>
+        <Values :value="value" :chart-values="chartValues" :mode="mode" />
+      </template>
+    </Wizard>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+  $padding: 5px;
+  $height: 110px;
+  $margin: 10px;
+
+  ::v-deep .step-container {
+    height: auto;
+  }
+
+  .step {
+    &__basic {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow-x: hidden;
+
+      .spacer {
+        line-height: 2;
+      }
+    }
+  }
+
+  .filter {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-self: flex-end;
+
+    & > * {
+      margin: $margin;
+    }
+    & > *:first-child {
+      margin-left: 0;
+    }
+    & > *:last-child {
+      margin-right: 0;
+    }
+
+    &__category {
+      min-width: 200px;
+      height: unset;
+    }
+  }
+
+  @media only screen and (min-width: map-get($breakpoints, '--viewport-4')) {
+    .filter {
+      width: 100%;
+    }
+  }
+  @media only screen and (min-width: map-get($breakpoints, '--viewport-12')) {
+    .filter {
+      width: 75%;
+    }
+  }
+
+  .grid {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin: 0 -1*$margin;
+
+    @media only screen and (min-width: map-get($breakpoints, '--viewport-4')) {
+      .subtype {
+        width: 100%;
+      }
+    }
+    @media only screen and (min-width: map-get($breakpoints, '--viewport-7')) {
+      .subtype {
+        width: calc(50% - 2 * #{$margin});
+      }
+    }
+    @media only screen and (min-width: map-get($breakpoints, '--viewport-9')) {
+      .subtype {
+        width: calc(33.33333% - 2 * #{$margin});
+      }
+    }
+    @media only screen and (min-width: map-get($breakpoints, '--viewport-12')) {
+      .subtype {
+        width: calc(25% - 2 * #{$margin});
+      }
+    }
+
+    $color: var(--body-text) !important;
+
+    .subtype {
+      height: $height;
+      margin: $margin;
+      position: relative;
+      border-radius: calc( 1.5 * var(--border-radius));
+      border: 1px solid var(--border);
+      text-decoration: none !important;
+      color: $color;
+
+      &:hover:not(.disabled) {
+        box-shadow: 0 0 30px var(--shadow);
+        transition: box-shadow 0.1s ease-in-out;
+        cursor: pointer;
+        text-decoration: none !important;
+      }
+
+      &__metadata {
+        padding: $margin;
+      }
+
+      &__badge {
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding: 2px 10px;
+        border-bottom-left-radius: var(--border-radius);
+
+        label {
+          font-size: 12px;
+          line-height: 12px;
+          text-align: center;
+          display: block;
+          white-space: no-wrap;
+          text-overflow: ellipsis;
+          color: var(--app-rancher-accent-text);
+          margin: 0;
+        }
+      }
+
+      &__label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 20px;
+        margin-bottom: 0;
+        line-height: initial;
+      }
+
+      &__description {
+        margin-right: $margin;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--input-label);
+      }
+    }
+
+    .disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+</style>

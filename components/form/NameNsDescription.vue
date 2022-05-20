@@ -245,7 +245,7 @@ export default {
 
     namespace(val) {
       this.updateNamespace(val);
-      this.$emit('change');
+      this.$emit('change', val);
     },
 
     description(val) {

@@ -1,25 +1,21 @@
 <script>
 import { mapGetters } from 'vuex';
 import { _CREATE } from '@/config/query-params';
-import { SERVICE } from '@/config/types';
 import { monitoringStatus } from '@/utils/monitoring';
 import { dashboardExists } from '@/utils/grafana';
 import CreateEditView from '@/mixins/create-edit-view';
 
 import DashboardMetrics from '@/components/DashboardMetrics';
+import Loading from '@/components/Loading';
 import ResourceTabs from '@/components/form/ResourceTabs';
-import ResourceTable from '@/components/ResourceTable';
 import Tab from '@/components/Tabbed/Tab';
-
-// The uid in the proxy `r3Pw-107z` is setup in the configmap for the kubewarden dashboard
-// It's the generic uid from the json here: https://grafana.com/grafana/dashboards/15314
-const POLICY_METRICS_URL = `/api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy/d/r3Pw-1O7z/kubewarden?orgId=1`;
+import TraceTable from '@/components/TraceTable';
 
 export default {
   name: 'ClusterAdmissionPolicy',
 
   components: {
-    DashboardMetrics, ResourceTabs, ResourceTable, Tab
+    DashboardMetrics, Loading, ResourceTabs, Tab, TraceTable
   },
 
   mixins: [CreateEditView],
@@ -29,10 +25,12 @@ export default {
       type:    String,
       default: _CREATE,
     },
+
     resource: {
       type:    String,
       default: null
     },
+
     value: {
       type:     Object,
       required: true,
@@ -41,70 +39,42 @@ export default {
 
   async fetch() {
     const inStore = this.$store.getters['currentStore'](this.resource);
-    const CLUSTER_PATH = `/k8s/clusters/${ this.currentCluster?.id }/api/v1/namespaces`;
 
-    const JAEGER_PROXY = `${ CLUSTER_PATH }/jaeger/services/http:all-in-one-query:16686/proxy/api/traces?service=kubewarden-policy-server&operation=validation&tags={"allowed"%3A"false"}`;
+    this.metricsProxy = await this.value.grafanaProxy();
 
-    try {
-      this.metricsService = this.monitoringStatus.installed && await dashboardExists(this.$store, this.currentCluster?.id, POLICY_METRICS_URL);
-    } catch (e) {
-      console.error(`Error fetching metrics status: ${ e }`); // eslint-disable-line no-console
+    if ( this.monitoringStatus.installed ) {
+      try {
+        this.metricsProxy = await this.value.grafanaProxy();
+
+        if ( this.metricsProxy ) {
+          this.metricsService = await dashboardExists(this.$store, this.currentCluster?.id, this.metricsProxy);
+        }
+      } catch (e) {
+        console.error(`Error fetching Grafana service: ${ e }`); // eslint-disable-line no-console
+      }
     }
 
-    try {
-      this.jaegerService = await this.$store.dispatch('cluster/find', { type: SERVICE, id: 'jaeger/jaeger-operator-metrics' });
-      this.traces = await this.$store.dispatch(`${ inStore }/request`, { url: JAEGER_PROXY });
-    } catch (e) {
-      console.error(`Error fetching Jaeger service: ${ e }`); // eslint-disable-line no-console
+    this.jaegerService = await this.value.jaegerService();
+
+    if ( this.jaegerService ) {
+      try {
+        const TRACE_TAGS = `"allowed"%3A"false"%2C"policy_id"%3A"clusterwide-${ this.value.metadata?.name }"`;
+        const PROXY_PATH = `api/traces?service=kubewarden-policy-server&operation=validation&tags={${ TRACE_TAGS }}`;
+        const JAEGER_PATH = `${ this.jaegerService.proxyUrl('http', 16686) + PROXY_PATH }`;
+
+        this.traces = await this.$store.dispatch(`${ inStore }/request`, { url: JAEGER_PATH });
+      } catch (e) {
+        console.error(`Error fetching Jaeger service: ${ e }`); // eslint-disable-line no-console
+      }
     }
   },
 
   data() {
     return {
-      POLICY_METRICS_URL,
-
-      metricsService:     null,
       jaegerService:      null,
+      metricsProxy:       null,
+      metricsService:     null,
       traces:             null,
-
-      tracesHeaders: [
-        {
-          name:   'kind',
-          value:  'kind',
-          label:  'Kind',
-          sort:   'kind'
-        },
-        {
-          name:   'startTime',
-          value:  'startTime',
-          label:  'Start Time',
-          sort:   'startTime'
-        },
-        {
-          name:   'duration',
-          value:  'duration',
-          label:  'Duration (ms)',
-          sort:   'duration'
-        },
-        {
-          name:  'name',
-          value: 'name',
-          label: 'Name',
-          sort:  'name'
-        },
-        {
-          name:  'namespace',
-          value: 'namespace',
-          label: 'Namespace',
-          sort:  'namespace'
-        },
-        {
-          name:  'operation',
-          value: 'operation',
-          label: 'Operation',
-          sort:  'operation'
-        },
-      ]
     };
   },
 
@@ -113,65 +83,46 @@ export default {
     ...monitoringStatus(),
 
     dashboardVars() {
-      return { policy_name: this.value?.id };
+      return { policy_name: `clusterwide-${ this.value?.id }` };
     },
 
     hasMetricsTabs() {
       return this.metricsService;
     },
 
+    hasRelationships() {
+      return !!this.value.metadata?.relationships;
+    },
+
     tracesRows() {
-      const out = this.traces?.data?.map((trace) => {
-        const span = trace.spans.find(s => s.operationName === 'validation');
-        const date = new Date(span.startTime).toUTCString();
-
-        span.startTime = date;
-
-        const tags = span.tags.filter(t => (
-          t.key === 'kind' || t.key === 'name' || t.key === 'namespace' || t.key === 'operation'
-        ));
-
-        return tags.reduce((tag, item) => ({
-          ...span, ...tag, [item.key]: item.value
-        }), {});
-      });
-
-      return out;
+      return this.value.traceTableRows(this.traces);
     }
   }
 };
 </script>
 
 <template>
-  <div>
+  <Loading v-if="$fetchState.pending" />
+  <div v-else>
     <div class="mb-20">
       <h3>{{ t('namespace.resources') }}</h3>
     </div>
-    <ResourceTabs v-model="value" :mode="mode">
-      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="2">
+    <ResourceTabs v-model="value" :mode="mode" :need-related="hasRelationships">
+      <Tab v-if="metricsService" name="policy-metrics" label="Metrics" :weight="99">
         <template #default="props">
           <DashboardMetrics
             v-if="props.active"
-            :detail-url="POLICY_METRICS_URL"
-            :summary-url="POLICY_METRICS_URL"
+            :detail-url="metricsProxy"
+            :summary-url="metricsProxy"
             :vars="dashboardVars"
             graph-height="825px"
           />
         </template>
       </Tab>
-      <Tab v-if="jaegerService" name="policy-tracing" label="Tracing">
-        <template #default>
-          <ResourceTable
-            v-if="traces"
-            :rows="tracesRows"
-            :headers="tracesHeaders"
-            :table-actions="false"
-            :row-actions="false"
-            key-field="key"
-            default-sort-by="state"
-            :paged="true"
-          />
-        </template>
+      <Tab v-if="traces" name="policy-tracing" label="Tracing" :weight="98">
+        <TraceTable
+          :rows="tracesRows"
+        />
       </Tab>
     </ResourceTabs>
   </div>

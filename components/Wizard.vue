@@ -506,7 +506,7 @@ $spacer: 10px;
 .controls-container {
   .controls-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding-top: $spacer;
 
     border-top: var(--header-border-size) solid var(--header-border);

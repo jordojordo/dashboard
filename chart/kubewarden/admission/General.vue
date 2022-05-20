@@ -1,0 +1,176 @@
+<script>
+import { _CREATE } from '@/config/query-params';
+import { KUBEWARDEN } from '@/config/types';
+import { set } from '@/utils/object';
+
+import NameNsDescription from '@/components/form/NameNsDescription';
+import LabeledInput from '@/components/form/LabeledInput';
+import LabeledSelect from '@/components/form/LabeledSelect';
+import RadioGroup from '@/components/form/RadioGroup.vue';
+
+export default {
+  name: 'General',
+
+  inject: ['chartType'],
+
+  props: {
+    mode: {
+      type:    String,
+      default: _CREATE
+    },
+    targetNamespace: {
+      type:     String,
+      required: true
+    },
+    value: {
+      type:     Object,
+      required: true
+    }
+  },
+
+  components: {
+    NameNsDescription,
+    LabeledInput,
+    LabeledSelect,
+    RadioGroup
+  },
+
+  async fetch() {
+    this.policyServers = await this.$store.dispatch('cluster/findAll', { type: KUBEWARDEN.POLICY_SERVER });
+
+    if ( this.isGlobal ) {
+      set(this.policy, 'ignoreRancherNamespaces', this.hasNamespaceSelector);
+    }
+  },
+
+  data() {
+    let policy = null;
+
+    if ( this.value.policy ) {
+      policy = this.value.policy;
+    } else {
+      policy = this.value;
+    }
+
+    return { policyServers: [], policy };
+  },
+
+  computed: {
+    hasNamespaceSelector() {
+      if ( !this.isCreate ) {
+        return this.value.policy.namespaceSelector;
+      }
+
+      return true;
+    },
+
+    isCreate() {
+      return this.mode === _CREATE;
+    },
+
+    isGlobal() {
+      return this.chartType === KUBEWARDEN.CLUSTER_ADMISSION_POLICY;
+    },
+
+    modeDisabled() {
+      // Kubewarden doesn't allow switching a policy from 'protect' to 'monitor'
+      if ( !this.isCreate ) {
+        return this.policy.spec.mode === 'protect';
+      }
+
+      return false;
+    },
+
+    policyServerOptions() {
+      if ( this.policyServers?.length > 0 ) {
+        const out = [];
+
+        this.policyServers.map(p => out.push(p.id));
+
+        return out;
+      }
+
+      return this.policyServers || [];
+    }
+  }
+};
+</script>
+
+<template>
+  <div>
+    <div class="row">
+      <div class="col span-12">
+        <NameNsDescription
+          :mode="mode"
+          :value="policy"
+          :description-hidden="true"
+          :namespaced="!isGlobal"
+          name-key="metadata.name"
+          namespace-key="metadata.namespace"
+        />
+      </div>
+    </div>
+    <div class="row mb-20">
+      <div class="col span-6">
+        <LabeledSelect
+          v-model="policy.spec.policyServer"
+          :value="value"
+          :mode="mode"
+          :options="policyServerOptions"
+          label="Policy Server"
+          tooltip="The PolicyServer that will receive the requests to be validated."
+        />
+      </div>
+      <div class="col span-6">
+        <LabeledInput
+          v-model="policy.spec.module"
+          :mode="mode"
+          label="Module"
+          tooltip="This is the WebAssembly module that holds the validation or mutation logic."
+          :required="true"
+        />
+      </div>
+    </div>
+    <div class="row mb-20">
+      <div class="col span-6">
+        <RadioGroup
+          v-model="policy.spec.mutating"
+          name="mutating"
+          :options="[false, true]"
+          :mode="mode"
+          label="Mutating"
+          :labels="['No', 'Yes']"
+          tooltip="A mutating policy will rebuild the requests with definied values that are conformant with the policy definition."
+          required
+        />
+      </div>
+      <div class="col span-6">
+        <RadioGroup
+          v-model="policy.spec.mode"
+          name="mode"
+          :disabled="modeDisabled"
+          :options="['monitor', 'protect']"
+          :mode="mode"
+          label="Mode"
+          :labels="['Monitor', 'Protect']"
+          tooltip="The monitor mode is a way to deploy policies to the cluster in a way that all requests that go through the policy will be accepted, as if the policy didn't exist. Defaults to 'Protect'."
+        />
+      </div>
+    </div>
+    <template v-if="isGlobal">
+      <div class="row mb-20">
+        <div class="col span-6">
+          <RadioGroup
+            v-model="policy.ignoreRancherNamespaces"
+            name="ignoreRancherNamespaces"
+            :options="[true, false]"
+            :mode="mode"
+            label="Ignore Rancher Namespaces"
+            :labels="['Yes', 'No']"
+            tooltip="Certain policies will break core services of Rancher, this will add a default list of namespaces to ignore."
+          />
+        </div>
+      </div>
+    </template>
+  </div>
+</template>

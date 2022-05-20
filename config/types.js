@@ -145,7 +145,7 @@ export const MANAGEMENT = {
   CLUSTER_ROLE_TEMPLATE_BINDING: 'management.cattle.io.clusterroletemplatebinding',
   FEATURE:                       'management.cattle.io.feature',
   // GROUP:                         'management.cattle.io.group',
-  KONTANIER_DRIVER:              'management.cattle.io.kontainerdriver',
+  KONTAINER_DRIVER:              'management.cattle.io.kontainerdriver',
   MULTI_CLUSTER_APP:             'management.cattle.io.multiclusterapp',
   NODE:                          'management.cattle.io.node',
   NODE_DRIVER:                   'management.cattle.io.nodedriver',
@@ -160,6 +160,7 @@ export const MANAGEMENT = {
   GLOBAL_ROLE:                   'management.cattle.io.globalrole',
   GLOBAL_ROLE_BINDING:           'management.cattle.io.globalrolebinding',
   POD_SECURITY_POLICY_TEMPLATE:  'management.cattle.io.podsecuritypolicytemplate',
+  MANAGED_CHART:                 'management.cattle.io.managedchart'
 };
 
 export const CAPI = {
@@ -276,37 +277,41 @@ export const HCI = {
   BLOCK_DEVICE:       'harvesterhci.io.blockdevice',
   CLOUD_TEMPLATE:     'harvesterhci.io.cloudtemplate',
   HOST:               'harvesterhci.io.host',
-  VERSION:            'harvesterhci.io.version'
+  VERSION:            'harvesterhci.io.version',
+  MANAGED_CHART:      'harvesterhci.io.managedchart',
 };
 
 export const VIRTUAL_HARVESTER_PROVIDER = 'harvester';
 
 export const KUBEWARDEN = {
+  ADMISSION_POLICY:         'policies.kubewarden.io.admissionpolicy',
   CLUSTER_ADMISSION_POLICY: 'policies.kubewarden.io.clusteradmissionpolicy',
   POLICY_SERVER:            'policies.kubewarden.io.policyserver',
   SPOOFED:                  {
-    POLICIES:                       'policies.kubewarden.io.clusteradmissionpolicy.policies',
-    POLICY:                         'policies.kubewarden.io.clusteradmissionpolicy.policy',
-    ALLOW_PRIVILEGE_ESCALATION_PSP: 'policies.kubewarden.io.clusteradmissionpolicy.policies.allow-privilege-escalation-psp',
-    ALLOWED_FSGROUPS_PSP:           'policies.kubewarden.io.clusteradmissionpolicy.policies.allowed-fsgroups-psp',
-    ALLOWED_PROC_MOUNT_TYPES_PSP:   'policies.kubewarden.io.clusteradmissionpolicy.policies.allowed-proc-mount-types-psp',
-    APPARMOR_PSP:                   'policies.kubewarden.io.clusteradmissionpolicy.policies.apparmor-psp',
-    CAPABILITIES_PSP:               'policies.kubewarden.io.clusteradmissionpolicy.policies.capabilities-psp',
-    DISALLOW_SERVICE_LOADBALANCER:  'policies.kubewarden.io.clusteradmissionpolicy.policies.disallow-service-loadbalancer',
-    DISALLOW_SERVICE_NODEPORT:      'policies.kubewarden.io.clusteradmissionpolicy.policies.disallow-service-nodeport',
-    FLEXVOLUME_DRIVERS_PSP:         'policies.kubewarden.io.clusteradmissionpolicy.policies.flexvolume-drivers-psp',
-    HOST_NAMESPACES_PSP:            'policies.kubewarden.io.clusteradmissionpolicy.policies.host-namespaces-psp',
-    HOSTPATHS_PSP:                  'policies.kubewarden.io.clusteradmissionpolicy.policies.hostpaths-psp',
-    INGRESS:                        'policies.kubewarden.io.clusteradmissionpolicy.policies.ingress',
-    POD_PRIVILEGED_POLICY:          'policies.kubewarden.io.clusteradmissionpolicy.policies.pod-privileged-policy',
-    POD_RUNTIME:                    'policies.kubewarden.io.clusteradmissionpolicy.policies.pod-runtime',
-    READONLY_ROOT_FILESYSTEM_PSP:   'policies.kubewarden.io.clusteradmissionpolicy.policies.readonly-root-filesystem-psp',
-    SAFE_ANNOTATIONS:               'policies.kubewarden.io.clusteradmissionpolicy.policies.safe-annotations',
-    SAFE_LABELS:                    'policies.kubewarden.io.clusteradmissionpolicy.policies.safe-labels',
-    SELINUX_PSP:                    'policies.kubewarden.io.clusteradmissionpolicy.policies.selinux-psp',
-    SYSCTL_PSP:                     'policies.kubewarden.io.clusteradmissionpolicy.policies.sysctl-psp',
-    TRUSTED_REPOS:                  'policies.kubewarden.io.clusteradmissionpolicy.policies.trusted-repos',
-    USER_GROUP_PSP:                 'policies.kubewarden.io.clusteradmissionpolicy.policies.user-group-psp',
-    VOLUMES_PSP:                    'policies.kubewarden.io.clusteradmissionpolicy.policies.volumes-psp'
+    POLICIES:                       'policies.kubewarden.io.policies',
+    POLICY:                         'policies.kubewarden.io.policy',
+    ALLOW_PRIVILEGE_ESCALATION_PSP: 'policies.kubewarden.io.policies.allow-privilege-escalation-psp',
+    ALLOWED_FSGROUPS_PSP:           'policies.kubewarden.io.policies.allowed-fsgroups-psp',
+    ALLOWED_PROC_MOUNT_TYPES_PSP:   'policies.kubewarden.io.policies.allowed-proc-mount-types-psp',
+    APPARMOR_PSP:                   'policies.kubewarden.io.policies.apparmor-psp',
+    CAPABILITIES_PSP:               'policies.kubewarden.io.policies.capabilities-psp',
+    DISALLOW_SERVICE_LOADBALANCER:  'policies.kubewarden.io.policies.disallow-service-loadbalancer',
+    DISALLOW_SERVICE_NODEPORT:      'policies.kubewarden.io.policies.disallow-service-nodeport',
+    FLEXVOLUME_DRIVERS_PSP:         'policies.kubewarden.io.policies.flexvolume-drivers-psp',
+    HOST_NAMESPACES_PSP:            'policies.kubewarden.io.policies.host-namespaces-psp',
+    HOSTPATHS_PSP:                  'policies.kubewarden.io.policies.hostpaths-psp',
+    INGRESS:                        'policies.kubewarden.io.policies.ingress',
+    POD_PRIVILEGED_POLICY:          'policies.kubewarden.io.policies.pod-privileged-policy',
+    POD_RUNTIME:                    'policies.kubewarden.io.policies.pod-runtime',
+    READONLY_ROOT_FILESYSTEM_PSP:   'policies.kubewarden.io.policies.readonly-root-filesystem-psp',
+    SAFE_ANNOTATIONS:               'policies.kubewarden.io.policies.safe-annotations',
+    SAFE_LABELS:                    'policies.kubewarden.io.policies.safe-labels',
+    SECCOMP_PSP:                    'policies.kubewarden.io.policies.seccomp-psp',
+    SELINUX_PSP:                    'policies.kubewarden.io.policies.selinux-psp',
+    SYSCTL_PSP:                     'policies.kubewarden.io.policies.sysctl-psp',
+    TRUSTED_REPOS:                  'policies.kubewarden.io.policies.trusted-repos',
+    USER_GROUP_PSP:                 'policies.kubewarden.io.policies.user-group-psp',
+    VERIFY_IMAGE_SIGNATURES:        'policies.kubewarden.io.policies.verify-image-signatures',
+    VOLUMES_PSP:                    'policies.kubewarden.io.policies.volumes-psp'
   }
 };

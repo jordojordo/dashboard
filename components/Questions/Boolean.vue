@@ -11,11 +11,15 @@ export default {
 <template>
   <div class="row">
     <div class="col span-6">
+      <h4 v-if="question.title" class="mt-20 mb-20">
+        {{ question.title }}
+      </h4>
       <Checkbox
         :mode="mode"
         :label="displayLabel"
         :value="value"
         :disabled="disabled"
+        :tooltip="question.tooltip"
         @input="$emit('input', $event)"
       />
     </div>

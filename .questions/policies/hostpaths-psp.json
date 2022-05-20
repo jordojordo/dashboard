@@ -1,0 +1,34 @@
+{
+  "apiVersion": "policies.kubewarden.io/v1alpha2",
+  "kind": "",
+  "metadata": {
+    "name": "hostpaths-psp"
+  },
+  "spec": {
+    "policyServer": "default",
+    "module": "ghcr.io/kubewarden/policies/hostpaths-psp:v0.1.5",
+    "rules": [
+      {
+        "apiGroups": [],
+        "apiVersions": [
+          "v1"
+        ],
+        "resources": [
+          "pods"
+        ],
+        "operations": [
+          "CREATE"
+        ]
+      }
+    ],
+    "mutating": false,
+    "settings": {
+      "allowedHostPaths": [
+        {
+          "pathPrefix": "",
+          "readOnly": false
+        }
+      ]
+    }
+  }
+}

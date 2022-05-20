@@ -10,6 +10,10 @@ export default {
   mixins: [labeledFormElement],
 
   props: {
+    defaultOption: {
+      type:    String,
+      default: null
+    },
     disabled: {
       type:    Boolean,
       default: false,
@@ -72,7 +76,7 @@ export default {
     },
 
     serviceNameNew() {
-      if (!this.selected) {
+      if ( !this.selected || !!this.defaultOption ) {
         return false;
       }
 

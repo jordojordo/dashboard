@@ -6,6 +6,16 @@ export default {
   components: { ArrayList },
   mixins:     [Question],
 
+  computed: {
+    protip() {
+      if ( this.question.tooltip ) {
+        return this.question.tooltip;
+      }
+
+      return false;
+    }
+  },
+
   methods: {
     update(val) {
       this.$emit('input', val);
@@ -22,7 +32,7 @@ export default {
         v-model="value[question.variable]"
         :title="question.label"
         :mode="mode"
-        :protip="false"
+        :protip="protip"
         :disabled="disabled"
         @input="update"
       />

@@ -184,6 +184,15 @@ export default {
       }
     },
 
+    /**
+     * Dismiss given error
+     */
+    closeError(index) {
+      const errors = this.errors.filter((_, i) => i !== index);
+
+      this.$emit('error', errors);
+    },
+
     emitOrRoute() {
       if ( this.cancelEvent ) {
         this.$emit('cancel');
@@ -244,8 +253,25 @@ export default {
 </script>
 
 <template>
-  <section>
-    <form :is="(isView? 'div' : 'form')" class="create-resource-container">
+  <section class="cru">
+    <form
+      :is="(isView? 'div' : 'form')"
+      class="create-resource-container cru__form"
+    >
+      <div
+        class="cru__errors"
+        :v-if="errors.length"
+      >
+        <Banner
+          v-for="(err, i) in errors"
+          :key="i"
+          color="error"
+          :label="stringify(err)"
+          :stacked="true"
+          :closable="true"
+          @close="closeError(i)"
+        />
+      </div>
       <div
         v-if="showSubtypeSelection"
         class="subtypes-container"
@@ -308,50 +334,49 @@ export default {
       <template v-if="showAsForm">
         <div
           v-if="_selectedSubtype || !subtypes.length"
-          class="resource-container"
+          class="resource-container cru__content"
         >
           <slot />
         </div>
-        <div class="controls-row">
-          <slot name="form-footer">
-            <CruResourceFooter
-              :mode="mode"
-              :is-form="showAsForm"
-              :show-cancel="showCancel"
-              @cancel-confirmed="confirmCancel"
-            >
-              <!-- Pass down templates provided by the caller -->
-              <template v-for="(_, slot) of $scopedSlots" v-slot:[slot]="scope">
-                <slot :name="slot" v-bind="scope" />
-              </template>
+        <slot name="form-footer">
+          <CruResourceFooter
+            class="cru__footer"
+            :mode="mode"
+            :is-form="showAsForm"
+            :show-cancel="showCancel"
+            @cancel-confirmed="confirmCancel"
+          >
+            <!-- Pass down templates provided by the caller -->
+            <template v-for="(_, slot) of $scopedSlots" v-slot:[slot]="scope">
+              <slot :name="slot" v-bind="scope" />
+            </template>
 
-              <template #default>
-                <div v-if="!isView">
-                  <button
-                    v-if="canYaml && (_selectedSubtype || !subtypes.length) && canEditYaml"
-                    type="button"
-                    class="btn role-secondary"
-                    @click="showPreviewYaml"
-                  >
-                    <t k="cruResource.previewYaml" />
-                  </button>
-                  <AsyncButton
-                    v-if="!showSubtypeSelection"
-                    ref="save"
-                    :disabled="!canSave"
-                    :mode="finishButtonMode || mode"
-                    @click="$emit('finish', $event)"
-                  />
-                </div>
-              </template>
-            </CruResourceFooter>
-          </slot>
-        </div>
+            <template #default>
+              <div v-if="!isView">
+                <button
+                  v-if="canYaml && (_selectedSubtype || !subtypes.length) && canEditYaml"
+                  type="button"
+                  class="btn role-secondary"
+                  @click="showPreviewYaml"
+                >
+                  <t k="cruResource.previewYaml" />
+                </button>
+                <AsyncButton
+                  v-if="!showSubtypeSelection"
+                  ref="save"
+                  :disabled="!canSave"
+                  :mode="finishButtonMode || mode"
+                  @click="$emit('finish', $event)"
+                />
+              </div>
+            </template>
+          </CruResourceFooter>
+        </slot>
       </template>
 
       <section
         v-else
-        class="cru-resource-yaml-container"
+        class="cru-resource-yaml-container cru__content"
       >
         <ResourceYaml
           ref="resourceyaml"
@@ -367,62 +392,51 @@ export default {
           @error="e=>$emit('error', e)"
         >
           <template #yamlFooter="{yamlSave, showPreview, yamlPreview, yamlUnpreview}">
-            <div class="controls-row">
-              <slot name="cru-yaml-footer">
-                <CruResourceFooter
-                  :done-route="doneRoute"
-                  :mode="mode"
-                  :is-form="showAsForm"
-                  @cancel-confirmed="confirmCancel"
-                >
-                  <template #default="{checkCancel}">
-                    <div class="controls-middle">
-                      <button
-                        v-if="showPreview"
-                        type="button"
-                        class="btn role-secondary"
-                        @click="yamlUnpreview"
-                      >
-                        <t k="resourceYaml.buttons.continue" />
-                      </button>
-                      <button
-                        v-if="!showPreview && isEdit"
-                        :disabled="!canDiff"
-                        type="button"
-                        class="btn role-secondary"
-                        @click="yamlPreview"
-                      >
-                        <t k="resourceYaml.buttons.diff" />
-                      </button>
-                    </div>
-                    <div v-if="_selectedSubtype || !subtypes.length" class="controls-right">
-                      <button type="button" class="btn role-secondary" @click="checkCancel(false)">
-                        <t k="cruResource.backToForm" />
-                      </button>
-                      <AsyncButton
-                        v-if="!showSubtypeSelection"
-                        :disabled="!canSave"
-                        :action-label="isEdit ? t('generic.save') : t('generic.create')"
-                        @click="cb=>yamlSave(cb)"
-                      />
-                    </div>
-                  </template>
-                </CruResourceFooter>
-              </slot>
-            </div>
+            <slot name="cru-yaml-footer">
+              <CruResourceFooter
+                class="cru__footer"
+                :done-route="doneRoute"
+                :mode="mode"
+                :is-form="showAsForm"
+                @cancel-confirmed="confirmCancel"
+              >
+                <template #default="{checkCancel}">
+                  <div class="controls-middle">
+                    <button
+                      v-if="showPreview"
+                      type="button"
+                      class="btn role-secondary"
+                      @click="yamlUnpreview"
+                    >
+                      <t k="resourceYaml.buttons.continue" />
+                    </button>
+                    <button
+                      v-if="!showPreview && isEdit"
+                      :disabled="!canDiff"
+                      type="button"
+                      class="btn role-secondary"
+                      @click="yamlPreview"
+                    >
+                      <t k="resourceYaml.buttons.diff" />
+                    </button>
+                  </div>
+                  <div v-if="_selectedSubtype || !subtypes.length" class="controls-right">
+                    <button type="button" class="btn role-secondary" @click="checkCancel(false)">
+                      <t k="cruResource.backToForm" />
+                    </button>
+                    <AsyncButton
+                      v-if="!showSubtypeSelection"
+                      :disabled="!canSave"
+                      :action-label="isEdit ? t('generic.save') : t('generic.create')"
+                      @click="cb=>yamlSave(cb)"
+                    />
+                  </div>
+                </template>
+              </CruResourceFooter>
+            </slot>
           </template>
         </ResourceYaml>
       </section>
-
-      <div
-        v-for="(err, idx) in errors"
-        :key="idx"
-      >
-        <Banner
-          color="error"
-          :label="stringify(err)"
-        />
-      </div>
     </form>
   </section>
 </template>
@@ -444,6 +458,7 @@ export default {
 }
 
 $logo: 60px;
+$logo-space: 100px;
 
 .title {
   margin-top: 20px;
@@ -455,27 +470,23 @@ $logo: 60px;
 
 .subtype-container {
   position: relative;
+  display: flex;
+  height: 100%;
 };
 
 .subtype-body {
-  margin-left: $logo + 10px;
+  flex: 1;
+  padding: 10px;
 }
 
 .subtype-logo {
   align-items: center;
   display: flex;
   justify-content: center;
-  position: absolute;
-  left: 0;
-  width: $logo;
-  height: $logo;
-  border-radius: calc(2 * var(--border-radius));
+  min-width: $logo-space;
+  min-height: $logo-space;
   overflow: hidden;
-  background-color: white;
-
-  > .round-image {
-    margin-right: 0;
-  };
+  background-color: var(--box-bg);
 
   img {
     width: $logo - 4px;
@@ -483,6 +494,44 @@ $logo: 60px;
     object-fit: contain;
     position: relative;
     top: 2px;
+  }
+}
+
+.cru {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  &__content {
+    flex-grow: 1;
+  }
+
+  &__footer {
+    right: 0;
+    position: sticky;
+    bottom: 0;
+    background-color: var(--header-bg);
+    border-top: var(--header-border-size) solid var(--header-border);
+
+    // Overrides outlet padding
+    margin-left: -$space-m;
+    margin-right: -$space-m;
+    margin-bottom: -$space-m;
+    padding: $space-s $space-m;
+  }
+
+  &__errors {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--header-bg);
+    margin: 10px 0;
   }
 }
 

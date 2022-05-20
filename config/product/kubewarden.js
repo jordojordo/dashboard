@@ -5,6 +5,15 @@ import { STATE, NAME as NAME_HEADER } from '@/config/table-headers';
 export const NAME = 'kubewarden';
 export const CHART_NAME = 'rancher-kubewarden';
 
+export const ADMISSION_POLICY_STATE = {
+  name:      'policyStatus',
+  sort:      ['stateSort', 'nameSort'],
+  value:     'status.policyStatus',
+  label:     'Status',
+  width:     100,
+  formatter: 'PolicyStatus',
+};
+
 export function init(store) {
   const {
     product,
@@ -16,6 +25,7 @@ export function init(store) {
 
   const {
     POLICY_SERVER,
+    ADMISSION_POLICY,
     CLUSTER_ADMISSION_POLICY,
     SPOOFED
   } = KUBEWARDEN;
@@ -28,6 +38,7 @@ export function init(store) {
 
   basicType([
     POLICY_SERVER,
+    ADMISSION_POLICY,
     CLUSTER_ADMISSION_POLICY,
   ]);
 
@@ -60,18 +71,14 @@ export function init(store) {
           readonly_root_filesystem_psp:   { type: SPOOFED.READONLY_ROOT_FILESYSTEM_PSP },
           safe_annotations:               { type: SPOOFED.SAFE_ANNOTATIONS },
           safe_labels:                    { type: SPOOFED.SAFE_LABELS },
+          seccomp_psp:                    { type: SPOOFED.SECCOMP_PSP },
           selinux_psp:                    { type: SPOOFED.SELINUX_PSP },
           sysctl_psp:                     { type: SPOOFED.SYSCTL_PSP },
           trusted_repos:                  { type: SPOOFED.TRUSTED_REPOS },
           user_group_psp:                 { type: SPOOFED.USER_GROUP_PSP },
+          verify_image_signatures:        { type: SPOOFED.VERIFY_IMAGE_SIGNATURES },
           volumes_psp:                    { type: SPOOFED.VOLUMES_PSP },
         }
-      },
-      {
-        id:             SPOOFED.HOSTPATHS_PSP, // This is just recreating what I need to get from helm for policy charts
-        type:           'schema',
-        group:          'kubewarden',
-        resourceFields: { questions: { allowedHostPaths: { type: 'array[string]' } } }
       }
     ]
   });
@@ -102,9 +109,52 @@ export function init(store) {
     }
   ]);
 
-  headers(CLUSTER_ADMISSION_POLICY, [
-    STATE,
+  headers(ADMISSION_POLICY, [
+    ADMISSION_POLICY_STATE,
     NAME_HEADER,
+    {
+      name:  'capPolicyServer',
+      label: 'Policy Server',
+      value: 'spec.policyServer'
+    },
+    {
+      name:  'mode',
+      label: 'Mode',
+      value: 'spec.mode'
+    },
+    {
+      name:          'kubewardenAdmissionPolicies',
+      label:         'Module',
+      value:         'spec.module',
+      formatterOpts: {
+        options: { internal: true },
+        to:      {
+          name:   'c-cluster-product-resource-id',
+          params: { resource: ADMISSION_POLICY }
+        }
+      },
+    },
+    {
+      name:      'capCreated',
+      label:     'Created',
+      value:     'metadata.creationTimestamp',
+      formatter: 'LiveDate'
+    }
+  ]);
+
+  headers(CLUSTER_ADMISSION_POLICY, [
+    ADMISSION_POLICY_STATE,
+    NAME_HEADER,
+    {
+      name:  'capPolicyServer',
+      label: 'Policy Server',
+      value: 'spec.policyServer'
+    },
+    {
+      name:  'mode',
+      label: 'Mode',
+      value: 'spec.mode'
+    },
     {
       name:          'kubewardenClusterAdmissionPolicies',
       label:         'Module',
@@ -116,11 +166,6 @@ export function init(store) {
           params: { resource: CLUSTER_ADMISSION_POLICY }
         }
       },
-    },
-    {
-      name:      'capPolicyStatus',
-      label:     'Policy Status',
-      value:     'status.policyStatus',
     },
     {
       name:      'capCreated',

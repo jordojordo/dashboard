@@ -21,6 +21,7 @@ export default {
         :required="question.required"
         :value="value"
         :disabled="disabled"
+        :tooltip="question.tooltip"
         @input="val = parseFloat($event); if ( !isNaN(val) ) { $emit('input', val) }"
       />
     </div>

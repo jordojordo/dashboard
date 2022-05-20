@@ -1,0 +1,19 @@
+{
+  "apiVersion": "policies.kubewarden.io/v1alpha2",
+  "kind": "",
+  "metadata": {
+    "name": ""
+  },
+  "spec": {
+    "policyServer": "",
+    "module": "",
+    "rules": {
+      "apiGroups": "",
+      "apiVersions": "v1",
+      "resources": "",
+      "operations": "CREATE"
+    },
+    "mutating": false,
+    "settings": {}
+  }
+}

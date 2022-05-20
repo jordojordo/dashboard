@@ -10,6 +10,7 @@ import CruResource from '@/components/CruResource';
 import RadioGroup from '@/components/form/RadioGroup';
 import LabeledInput from '@/components/form/LabeledInput';
 import LabeledSelect from '@/components/form/LabeledSelect';
+import UnitInput from '@/components/form/UnitInput';
 import NameNsDescription from '@/components/form/NameNsDescription';
 
 import SSHKey from '@/edit/kubevirt.io.virtualmachine/VirtualMachineSSHKey';
@@ -18,6 +19,7 @@ import Network from '@/edit/kubevirt.io.virtualmachine/VirtualMachineNetwork';
 import CpuMemory from '@/edit/kubevirt.io.virtualmachine/VirtualMachineCpuMemory';
 import CloudConfig from '@/edit/kubevirt.io.virtualmachine/VirtualMachineCloudConfig';
 import NodeScheduling from '@/components/form/NodeScheduling';
+import AccessCredentials from '@/edit/kubevirt.io.virtualmachine/VirtualMachineAccessCredentials';
 
 import { clear } from '@/utils/array';
 import { clone } from '@/utils/object';
@@ -43,6 +45,7 @@ export default {
     CruResource,
     LabeledInput,
     LabeledSelect,
+    UnitInput,
     NameNsDescription,
     Volume,
     SSHKey,
@@ -50,6 +53,7 @@ export default {
     CpuMemory,
     CloudConfig,
     NodeScheduling,
+    AccessCredentials,
   },
 
   mixins: [CreateEditView, VM_MIXIN],
@@ -141,6 +145,10 @@ export default {
 
     showRunning() {
       return !(this.isEdit || this.isView);
+    },
+
+    isQemuInstalled() {
+      return this.value.isQemuInstalled;
     }
   },
 
@@ -153,7 +161,7 @@ export default {
         if (id !== old && !this.templateVersionId) {
           const templates = await this.$store.dispatch('harvester/findAll', { type: HCI.VM_TEMPLATE });
 
-          this.templateVersionId = templates.find( O => O.id === id)?.defaultVersionId;
+          this.templateVersionId = templates.find( O => O.id === id)?.spec?.defaultVersionId;
         }
       },
       immediate: false
@@ -166,11 +174,16 @@ export default {
         }
         const versions = await this.$store.dispatch('harvester/findAll', { type: HCI.VM_VERSION });
         const curVersion = versions.find( V => V.id === id);
+        const cloneVersionVM = clone(curVersion.spec.vm);
 
-        this.getInitConfig({ value: curVersion.spec.vm });
+        delete cloneVersionVM.spec?.template?.spec?.accessCredentials;
+        delete cloneVersionVM.spec?.template?.metadata?.annotations?.[HCI_ANNOTATIONS.DYNAMIC_SSHKEYS_NAMES];
+        delete cloneVersionVM.spec?.template?.metadata?.annotations?.[HCI_ANNOTATIONS.DYNAMIC_SSHKEYS_USERS];
+
+        this.getInitConfig({ value: cloneVersionVM });
         this.$set(this, 'hasCreateVolumes', []); // When using the template, all volume names need to be newly created
 
-        const claimTemplate = this.getVolumeClaimTemplates(curVersion.spec.vm);
+        const claimTemplate = this.getVolumeClaimTemplates(cloneVersionVM);
 
         this.value.metadata.annotations[HCI_ANNOTATIONS.VOLUME_CLAIM_TEMPLATE] = JSON.stringify(claimTemplate);
       }
@@ -195,6 +208,7 @@ export default {
 
       try {
         await this.saveSecret(res);
+        await this.saveAccessCredentials(res);
       } catch (e) {
         this.errors.push(...exceptionToErrorsArray(e));
       }
@@ -286,15 +300,14 @@ export default {
     },
 
     async _save(value, buttonCb) {
-      await this.applyHooks(BEFORE_SAVE_HOOKS);
       try {
+        await this.applyHooks(BEFORE_SAVE_HOOKS);
         await value.save();
+        await this.applyHooks(AFTER_SAVE_HOOKS);
       } catch (e) {
         this.errors.push(...exceptionToErrorsArray(e));
         buttonCb(false);
       }
-
-      await this.applyHooks(AFTER_SAVE_HOOKS);
     },
 
     restartVM() {
@@ -308,7 +321,7 @@ export default {
         const newVM = JSON.parse(JSON.stringify(cloneDeepNewVM));
 
         if (!isEqual(oldVM, newVM) && this.isRestartImmediately) {
-          this.value.doAction('restart', {});
+          this.value.doActionGrowl('restart', {});
         }
       }
     },
@@ -319,9 +332,17 @@ export default {
           this.$set(this.value.spec.template.spec, 'hostname', this.value.metadata.name);
         }
       }
+
+      const errors = this.getAccessCredentialsValidation();
+
+      if (errors.length > 0) {
+        return Promise.reject(errors);
+      } else {
+        return Promise.resolve();
+      }
     },
 
-    validataCount(count) {
+    validateCount(count) {
       if (count > 10) {
         this.$set(this, 'count', 10);
       }
@@ -385,7 +406,7 @@ export default {
             type="number"
             :label="t('harvester.virtualMachine.instance.multiple.count')"
             required
-            @input="validataCount"
+            @input="validateCount"
           />
         </template>
       </NameNsDescription>
@@ -457,10 +478,14 @@ export default {
           <NodeScheduling :mode="mode" :value="spec.template.spec" :nodes="nodesIdOptions" />
         </Tab>
 
+        <Tab v-if="isEdit" :label="t('harvester.tab.accessCredentials')" name="accessCredentials" :weight="-4">
+          <AccessCredentials v-model="accessCredentials" :mode="mode" :resource="value" :is-qemu-installed="isQemuInstalled" />
+        </Tab>
+
         <Tab
           name="advanced"
           :label="t('harvester.tab.advanced')"
-          :weight="-4"
+          :weight="-5"
         >
           <div class="row mb-20">
             <div class="col span-6">
@@ -487,13 +512,25 @@ export default {
             <a v-else v-t="'harvester.generic.showMore'" role="button" @click="toggleAdvanced" />
           </div>
 
-          <div v-if="showAdvanced" class="mb-20">
+          <div v-if="showAdvanced" class="row mb-20">
             <div class="col span-6">
               <LabeledInput
                 v-model="hostname"
                 :label-key="hostnameLabel"
                 :placeholder="hostPlaceholder"
                 :mode="mode"
+              />
+            </div>
+
+            <div class="col span-6">
+              <UnitInput
+                v-model="reservedMemory"
+                v-int-number
+                :label="t('harvester.virtualMachine.input.reservedMemory')"
+                :mode="mode"
+                :input-exponent="2"
+                :increment="1024"
+                :output-modifier="true"
               />
             </div>
           </div>
@@ -524,6 +561,14 @@ export default {
             type="checkbox"
             :disabled="isWindows"
             label-key="harvester.virtualMachine.installAgent"
+            :mode="mode"
+          />
+
+          <Checkbox
+            v-model="efiEnabled"
+            class="check"
+            type="checkbox"
+            :label="t('harvester.virtualMachine.efiEnabled')"
             :mode="mode"
           />
         </Tab>
