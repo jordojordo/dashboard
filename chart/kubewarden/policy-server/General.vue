@@ -1,6 +1,6 @@
 <script>
 import { _CREATE } from '@/config/query-params';
-import { CAPI, SERVICE_ACCOUNT } from '@/config/types';
+import { SERVICE_ACCOUNT } from '@/config/types';
 import { RELEASE_NAMESPACE } from '@/config/labels-annotations';
 import { allHash } from '@/utils/promise';
 
@@ -27,10 +27,11 @@ export default {
   },
 
   async fetch() {
-    const requests = { rancherClusters: this.$store.dispatch('management/findAll', { type: CAPI.RANCHER_CLUSTER }) };
+    const serviceAccountSchema = await this.$store.getters['cluster/schemaFor'](SERVICE_ACCOUNT);
+    const requests = {};
 
     // Only fetch types if the user can see them
-    if ( this.$store.getters['cluster/schemaFor'](SERVICE_ACCOUNT) ) {
+    if ( serviceAccountSchema ) {
       Object.assign(requests, { serviceAccount: SERVICE_ACCOUNT });
 
       requests.serviceAccount = this.$store.dispatch('cluster/findAll', { type: SERVICE_ACCOUNT });
