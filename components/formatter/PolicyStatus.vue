@@ -1,4 +1,6 @@
 <script>
+import { colorForStatus } from '@/plugins/kubewarden/policy-class';
+
 import BadgeState from '@/components/BadgeState';
 
 export default {
@@ -21,7 +23,7 @@ export default {
   watch: {
     value: {
       handler() {
-        const color = this.colorForStatus(this.value);
+        const color = colorForStatus(this.value);
 
         this.stateDisplay = this.value;
         this.stateBackground = color.replace('text-', 'bg-');
@@ -29,23 +31,6 @@ export default {
 
       immediate: true
     }
-  },
-
-  methods: {
-    colorForStatus(value) {
-      switch (value) {
-      case 'unschedulable':
-        return 'text-error';
-      case 'pending':
-        return 'text-info';
-      case 'active':
-        return 'text-success';
-      default:
-        break;
-      }
-
-      return 'text-warning'; // 'unscheduled' is the default state
-    },
   }
 };
 </script>

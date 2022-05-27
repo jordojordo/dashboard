@@ -1,7 +1,6 @@
 <script>
 import { _CREATE } from '@/config/query-params';
 import { SERVICE_ACCOUNT } from '@/config/types';
-import { RELEASE_NAMESPACE } from '@/config/labels-annotations';
 import { allHash } from '@/utils/promise';
 
 import LabeledInput from '@/components/form/LabeledInput';
@@ -40,42 +39,19 @@ export default {
     const hash = await allHash(requests);
 
     this.serviceAccounts = hash.serviceAccount || [];
-
-    if ( this.isCreate ) {
-      this.selectedNamespace = this.value?.metadata?.namespace || null;
-    } else {
-      this.selectedNamespace = this.value?.metadata?.annotations?.[RELEASE_NAMESPACE];
-    }
   },
 
   data() {
     return {
       defaultImage:          true,
       defaultServiceAccount: this.value?.spec?.serviceAccountName || null,
-      selectedNamespace:     null,
       serviceAccounts:       [],
     };
   },
 
   computed: {
-    forceNamespace() {
-      if ( this.isCreate ) {
-        return null;
-      }
-
-      return this.value?.metadata?.annotations?.[RELEASE_NAMESPACE];
-    },
-
     isCreate() {
       return this.mode === _CREATE;
-    },
-
-    namespaceKey() {
-      if ( this.isCreate) {
-        return 'metadata.namespace';
-      }
-
-      return `metadata.annotations['${ RELEASE_NAMESPACE }']`;
     },
 
     namespacedServiceNames() {
@@ -85,12 +61,6 @@ export default {
 
       return this.serviceAccounts;
     },
-  },
-
-  methods: {
-    handleChangeNamespace(neu) {
-      this.$set(this, 'selectedNamespace', neu);
-    }
   }
 };
 </script>
@@ -102,12 +72,9 @@ export default {
         <NameNsDescription
           :mode="mode"
           :value="value"
-          :namespaced="true"
+          :namespaced="false"
           :description-hidden="true"
           name-key="metadata.name"
-          :force-namespace="forceNamespace"
-          :namespace-key="namespaceKey"
-          @change="handleChangeNamespace($event)"
         />
       </div>
     </div>

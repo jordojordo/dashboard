@@ -220,3 +220,34 @@ export default class KubewardenModel extends SteveModel {
     return out;
   }
 }
+
+export function colorForStatus(status) {
+  switch ( status ) {
+  case 'unschedulable':
+    return 'text-error';
+  case 'pending':
+    return 'text-info';
+  case 'active':
+    return 'text-success';
+  default:
+    break;
+  }
+
+  return 'text-warning'; // 'unscheduled' is the default state
+}
+
+export function stateSort(color, display) {
+  const SORT_ORDER = {
+    error:    1,
+    warning:  2,
+    info:     3,
+    success:  4,
+    ready:    5,
+    notready: 6,
+    other:    7,
+  };
+
+  color = color.replace(/^(text|bg)-/, '');
+
+  return `${ SORT_ORDER[color] || SORT_ORDER['other'] } ${ display }`;
+}
