@@ -1,9 +1,10 @@
 import SteveModel from '@/plugins/steve/steve-class';
 import { KUBEWARDEN, SERVICE } from '@/config/types';
 import { proxyUrlFromParts } from '@/models/service';
-import { findBy } from '@/utils/array';
+import { findBy, isArray } from '@/utils/array';
 import { isEmpty } from '@/utils/object';
 import filter from 'lodash/filter';
+import flatMap from 'lodash/flatMap';
 import matches from 'lodash/matches';
 
 export const TRACE_HEADERS = [
@@ -14,10 +15,16 @@ export const TRACE_HEADERS = [
     sort:  'operation'
   },
   {
-    name:   'kind',
-    value:  'kind',
-    label:  'Kind',
-    sort:   'kind'
+    name:  'mode',
+    value: 'mode',
+    label: 'Mode',
+    sort:  'mode'
+  },
+  {
+    name:  'kind',
+    value: 'kind',
+    label: 'Kind',
+    sort:  'kind'
   },
   {
     name:  'name',
@@ -32,18 +39,46 @@ export const TRACE_HEADERS = [
     sort:  'namespace'
   },
   {
-    name:   'startTime',
-    value:  'startTime',
-    label:  'Start Time',
-    sort:   'startTime:desc'
+    name:  'startTime',
+    value: 'startTime',
+    label: 'Start Time',
+    sort:  'startTime:desc'
   },
   {
-    name:   'duration',
-    value:  'duration',
-    label:  'Duration (ms)',
-    sort:   'duration'
+    name:  'duration',
+    value: 'duration',
+    label: 'Duration (ms)',
+    sort:  'duration'
   }
 ];
+
+export const CATEGORY_MAP = [
+  {
+    label: 'All',
+    value: ''
+  },
+  {
+    label: '*',
+    value: 'Global'
+  },
+  {
+    label: 'Ingress',
+    value: 'Ingress'
+  },
+  {
+    label: 'Pod',
+    value: 'Pod'
+  },
+  {
+    label: 'Service',
+    value: 'Service'
+  }
+];
+
+export const MODE_MAP = {
+  monitor: 'bg-success',
+  protect: 'bg-warning'
+};
 
 export const OPERATION_MAP = {
   CREATE: 'bg-info',
@@ -89,7 +124,9 @@ export const NAMESPACE_SELECTOR = {
 
 export default class KubewardenModel extends SteveModel {
   async allServices() {
-    return await this.$dispatch('cluster/findAll', { type: SERVICE }, { root: true });
+    const inStore = this.$rootGetters['currentProduct'].inStore;
+
+    return await this.$dispatch(`${ inStore }/findAll`, { type: SERVICE }, { root: true });
   }
 
   get detailPageHeaderBadgeOverride() {
@@ -160,6 +197,71 @@ export default class KubewardenModel extends SteveModel {
     };
   }
 
+  get jaegerProxy() {
+    return async() => {
+      try {
+        const service = await this.jaegerService();
+
+        const traceTypes = ['monitor', 'protect'];
+
+        const promises = traceTypes.map((t) => {
+          let traceTags; let proxyPath = null;
+          const name = this.jaegerPolicyName;
+
+          switch (t) {
+          case 'monitor':
+            traceTags = `"policy_id"%3A"${ name }"`;
+            proxyPath = `api/traces?service=kubewarden-policy-server&operation=policy_eval&tags={${ traceTags }}`;
+
+            break;
+          case 'protect':
+            traceTags = `"allowed"%3A"false"%2C"policy_id"%3A"${ name }"`;
+            proxyPath = `api/traces?service=kubewarden-policy-server&operation=validation&tags={${ traceTags }}`;
+
+            break;
+          default:
+            break;
+          }
+
+          const JAEGER_PATH = `${ service.proxyUrl('http', 16686) + proxyPath }`;
+
+          return this.$dispatch('request', { url: JAEGER_PATH });
+        });
+
+        let out = await Promise.all(promises);
+
+        if ( out.length > 1 ) {
+          out = flatMap(out);
+        }
+
+        return out;
+      } catch (e) {
+        console.error(`Error fetching Jaeger service: ${ e }`); // eslint-disable-line no-console
+      }
+
+      return null;
+    };
+  }
+
+  get jaegerPolicyName() {
+    let out = null;
+
+    switch (this.kind) {
+    case 'ClusterAdmissionPolicy':
+      out = `clusterwide-${ this.metadata?.name }`;
+      break;
+
+    case 'AdmissionPolicy':
+      out = `namespaced-${ this.metadata?.namespace }-${ this.metadata?.name }`;
+      break;
+
+    default:
+      break;
+    }
+
+    return out;
+  }
+
   // Determines if a policy is targeting rancher specific namespaces (which happens by default)
   get namespaceSelector() {
     const out = filter(this.spec?.namespaceSelector?.matchExpressions, matches(NAMESPACE_SELECTOR));
@@ -200,22 +302,52 @@ export default class KubewardenModel extends SteveModel {
   }
 
   traceTableRows(traces) {
-    const out = traces?.data?.map((trace) => {
-      const span = trace.spans.find(s => s.operationName === 'validation');
+    const traceArray = [];
 
-      const date = new Date(span.startTime / 1000);
-      const duration = span.duration / 1000;
+    // If a policy is in monitor mode it will pass multiple trace objects
+    if ( isArray(traces) ) {
+      traces?.map(t => traceArray.push(t.data));
+    } else {
+      Object.assign(traceArray, traces.data);
+    }
 
-      span.startTime = date.toUTCString();
-      span.duration = duration.toFixed(2);
+    const out = traceArray.flatMap(trace => trace.map((t) => {
+      const eSpan = t.spans?.find(s => s.operationName === 'policy_eval'); // span needed for Monitor mode
+      const vSpan = t.spans?.find(s => s.operationName === 'validation'); // main validation span
 
-      const keys = ['kind', 'mutated', 'name', 'namespace', 'operation', 'policy_id', 'response_message', 'response_code'];
-      const tags = keys.map(k => span.tags.find(tag => tag.key === k));
+      if ( vSpan ) {
+        const date = new Date(vSpan.startTime / 1000);
+        const duration = vSpan.duration / 1000;
 
-      return tags?.reduce((tag, item) => ({
-        ...span, ...tag, [item?.key]: item?.value
-      }), {});
-    });
+        vSpan.startTime = date.toUTCString();
+        vSpan.duration = duration.toFixed(2);
+
+        const vKeys = ['kind', 'mutated', 'name', 'namespace', 'operation', 'policy_id', 'response_message', 'response_code'];
+        const logs = {};
+        let mode = 'protect'; // defaults to Protect mode for "Mode" trace header
+
+        // 'policy_eval' logs will only exist when a policy is in monitor mode
+        if ( eSpan.logs.length > 0 ) {
+          mode = 'monitor';
+
+          const fields = eSpan.logs.flatMap(log => log.fields);
+
+          fields.map((f) => {
+            if ( f.key === 'response' ) {
+              Object.assign(logs, { [f.key]: f.value });
+            }
+          });
+        }
+
+        const tags = vKeys.map(vKey => vSpan.tags.find(tag => tag.key === vKey));
+
+        return tags?.reduce((tag, item) => ({
+          ...vSpan, ...tag, [item?.key]: item?.value, mode, logs
+        }), {});
+      }
+
+      return null;
+    }));
 
     return out;
   }

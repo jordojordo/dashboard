@@ -121,11 +121,11 @@ export default {
         {{ t('workload.serviceAccountName.label') }}
       </h3>
     </div>
-    <div class="row span-6">
+    <div class="row span-6 sa">
       <LabeledSelect
         v-model="selected"
         :label="selectLabel"
-        class="mr-10"
+        class="sa__input mr-10"
         :class="{ 'in-input': !isView }"
         :options="options"
         :searchable="searchable"
@@ -143,7 +143,7 @@ export default {
       <button
         v-if="!isView"
         type="button"
-        class="btn role-secondary"
+        class="sa__button btn role-secondary"
         data-testid="clear-search"
         @click="clearSearch($event)"
       >
@@ -160,3 +160,13 @@ export default {
     </template>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.sa {
+  align-items: center;
+
+  &__button {
+    height: 40px;
+  }
+}
+</style>

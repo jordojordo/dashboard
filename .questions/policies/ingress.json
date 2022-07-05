@@ -10,15 +10,9 @@
     "rules": [
       {
         "apiGroups": [],
-        "apiVersions": [
-          "v1"
-        ],
-        "resources": [
-          "ingress"
-        ],
-        "operations": [
-          "CREATE"
-        ]
+        "apiVersions": [],
+        "resources": [],
+        "operations": []
       }
     ],
     "mutating": false,

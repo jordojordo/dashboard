@@ -1,9 +1,12 @@
 <script>
-import ResourceTable from '@/components/ResourceTable';
+import Banner from '@/components/Banner';
 import Loading from '@/components/Loading';
+import ResourceTable from '@/components/ResourceTable';
 
 export default {
-  components: { Loading, ResourceTable },
+  components: {
+    Banner, Loading, ResourceTable
+  },
 
   props: {
     resource: {
@@ -28,7 +31,11 @@ export default {
   computed: {
     headers() {
       return this.$store.getters['type-map/headersFor'](this.schema);
-    }
+    },
+
+    hasNamespaceSelector(row) {
+      return row.namespaceSelector;
+    },
   }
 };
 </script>
@@ -36,11 +43,21 @@ export default {
 <template>
   <Loading v-if="$fetchState.pending" />
   <div v-else>
+    <Banner
+      class="type-banner mb-20 mt-0"
+      color="info"
+      :label="t('kubewarden.admissionPolicy.description')"
+    />
     <ResourceTable :schema="schema" :rows="rows" :headers="headers">
       <template #col:mode="{ row }">
         <td>
           <span class="policy__mode">
             <span class="text-capitalize">{{ row.spec.mode }}</span>
+            <i
+              v-if="!hasNamespaceSelector(row)"
+              :[v-tooltip.bottom]="t('kubewarden.admissionPolicy.namespaceWarning')"
+              class="icon icon-warning"
+            />
           </span>
         </td>
       </template>

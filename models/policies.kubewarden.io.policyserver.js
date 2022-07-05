@@ -1,7 +1,6 @@
 import KubewardenModel from '@/plugins/kubewarden/policy-class';
 import { ADMISSION_POLICY_STATE } from '@/config/product/kubewarden';
 import { KUBEWARDEN, POD } from '@/config/types';
-import { isEmpty } from '@/utils/object';
 
 export const RELATED_HEADERS = [
   ADMISSION_POLICY_STATE,
@@ -65,8 +64,9 @@ export default class PolicyServer extends KubewardenModel {
 
   get allRelatedPolicies() {
     return async() => {
+      const inStore = this.$rootGetters['currentProduct'].inStore;
       const types = [KUBEWARDEN.ADMISSION_POLICY, KUBEWARDEN.CLUSTER_ADMISSION_POLICY];
-      const promises = types.map(type => this.$dispatch(`cluster/findAll`, { type, opt: { force: true } }, { root: true }));
+      const promises = types.map(type => this.$dispatch(`${ inStore }/findAll`, { type, opt: { force: true } }, { root: true }));
 
       try {
         const out = await Promise.all(promises);
@@ -80,41 +80,73 @@ export default class PolicyServer extends KubewardenModel {
     };
   }
 
-  get jaegerProxy() {
+  get jaegerProxies() {
     return async() => {
       const jaeger = await this.jaegerService();
 
       if ( jaeger ) {
         const policies = await this.allRelatedPolicies();
-        const types = {
-          [KUBEWARDEN.ADMISSION_POLICY]:         'namespaced',
-          [KUBEWARDEN.CLUSTER_ADMISSION_POLICY]: 'clusterwide'
-        };
+        const traceTypes = ['monitor', 'protect'];
 
-        return policies?.map((p) => {
-          const type = types[p.type];
+        const promises = policies?.flatMap((p) => {
+          const name = this.jaegerPolicyNameByPolicy(p);
+          const paths = [];
 
-          const POLICY_ID = type === 'namespaced' ? `${ type }-${ p.metadata?.namespace }` : type;
-          const TRACE_TAGS = `"allowed"%3A"false"%2C"policy_id"%3A"${ POLICY_ID }-${ p.metadata?.name }"`;
-          const API_PATH = `api/traces?service=kubewarden-policy-server&operation=validation&limit=10&tags={${ TRACE_TAGS }}`;
+          traceTypes.map((t) => {
+            let traceTags; let proxyPath = null;
 
-          return `${ jaeger.proxyUrl('http', 16686) + API_PATH }`;
+            switch (t) {
+            case 'monitor':
+              traceTags = `"policy_id"%3A"${ name }"`;
+              proxyPath = `api/traces?service=kubewarden-policy-server&operation=policy_eval&tags={${ traceTags }}`;
+
+              break;
+            case 'protect':
+              traceTags = `"allowed"%3A"false"%2C"policy_id"%3A"${ name }"`;
+              proxyPath = `api/traces?service=kubewarden-policy-server&operation=validation&tags={${ traceTags }}`;
+
+              break;
+            default:
+              break;
+            }
+
+            paths.push(`${ jaeger.proxyUrl('http', 16686) + proxyPath }`);
+          });
+
+          return paths.map(p => this.$dispatch('request', { url: p }));
         });
+
+        return await Promise.all(promises);
       }
 
       return null;
     };
   }
 
-  consolidateTracesRows(traces) {
-    if ( !isEmpty(traces) ) {
-      return traces.flatMap(t => this.traceTableRows(t));
+  jaegerPolicyNameByPolicy(policy) {
+    let out = null;
+
+    switch (policy.type) {
+    case KUBEWARDEN.CLUSTER_ADMISSION_POLICY:
+      out = `clusterwide-${ policy.metadata?.name }`;
+      break;
+
+    case KUBEWARDEN.ADMISSION_POLICY:
+      out = `namespaced-${ policy.metadata?.namespace }-${ policy.metadata?.name }`;
+      break;
+
+    default:
+      break;
     }
+
+    return out;
   }
 
   async openLogs() {
     try {
-      const pod = await this.$dispatch('cluster/findMatching', {
+      const inStore = this.$rootGetters['currentProduct'].inStore;
+
+      const pod = await this.$dispatch(`${ inStore }/findMatching`, {
         type:     POD,
         selector: `app=kubewarden-policy-server-${ this.metadata?.name }` // kubewarden-policy-server is hardcoded from the kubewarden-controller
       }, { root: true });

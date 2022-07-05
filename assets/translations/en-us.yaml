@@ -2254,8 +2254,76 @@ kubewarden:
   title: Kubewarden
   policyServer:
     title: Policy Servers
+  admissionPolicy:
+    title: Admission Policies
+    description: AdmissionPolicy is a namespace-wide resource. These policies will process only the requests that are targeting the Namespace where the AdmissionPolicy is defined.
+    namespaceWarning: This policy is targeting Rancher specific namespaces which will cause catastrophic failures with your Rancher deployment.
   clusterAdmissionPolicy:
     title: Cluster Admission Policies
+    description: ClusterAdmissionPolicy is a cluster-wide resource. These policies will process all requests within the cluster where the ClusterAdmissionPolicy is defined.
+  customPolicy:
+    badge: Custom
+    title: Custom Policy
+    description: A generic template for using your own policy.
+  utils:
+    resetFilter: Reset Filter
+  policyConfig:
+    serverSelect:
+      label: Policy Server
+      tooltip: The PolicyServer that will receive the requests to be validated.
+    module:
+      label: Module
+      tooltip: This is the WebAssembly module that holds the validation or mutation logic.
+    mutating:
+      label: Mutating
+      tooltip: A mutating policy will rebuild the requests with definied values that are conformant with the policy definition.
+    mode:
+      label: Mode
+      tooltip: The monitor mode is a way to deploy policies to the cluster in a way that all requests that go through the policy will be accepted, as if the policy didn't exist. Defaults to 'Protect'.
+    ignoreRancherNamespaces:
+      label: Ignore Rancher Namespaces
+      tooltip: Certain policies will break core services of Rancher, this will add a default list of namespaces to ignore.
+    apiGroups:
+      title: API Groups
+      label: API Group
+    apiVersions:
+      title: API Versions
+      label: API Version
+    operations:
+      title: Operations
+      label: Operation type
+      tooltip: The type of operation to be validated.
+    resources:
+      title: Resources
+      label: Resource type
+      tooltip: The targeted resources for the policy. Needs to be a resource that is supported by the policy, this is determined in the `metadata.yml` of the selected policy.
+  policyServerConfig:
+    defaultImage:
+      label: Default Image
+      tooltip: Use the default `policy-server` container image.
+    image:
+      label: Image URL
+      tooltip: This is the container image the policy server.
+    replicas: Replicas
+    registry:
+      description: The PolicyServer allows you to pull policies from OCI registries and HTTP servers, by default HTTPS is enforced with host TLS verification. You can interact with registries using untrusted certificates or even without TLS by using the `insecureSources` setting. This approach is highly discouraged in environments closer to production.
+    insecureSources:
+      title: Insecure Sources
+      addLabel: Add Insecure Source
+      placeholder: registry-dev.example.com:5500
+    sourceAuthorities:
+      title: Source Authorities
+      add: Add Source Authority
+      endpoint: Registry URI Endpoint
+      placeholder: registry-pre.example.com:5500
+      certificate: 
+        label: Certificate 
+        add: Add PEM Certificate
+        remove: Remove Certificate
+        file: Read Certificate from File
+    verification:
+      label: Verification Config
+      tooltip: Name of VerificationConfig configmap in the same namespace, containing Sigstore verification configuration. The configuration must be under a key named verification-config in the Configmap.
   policyCharts:
     allow-privilege-escalation-psp:
       name: Allow Privilege Escalation PSP

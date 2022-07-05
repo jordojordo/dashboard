@@ -211,6 +211,10 @@ export default {
       type:    Boolean,
       default: false,
     },
+    readKeyUnique: {
+      type:    Boolean,
+      default: false
+    },
 
     removeLabel: {
       type:    String,
@@ -383,7 +387,9 @@ export default {
       const { name, value } = this.fileModifier(file.name, file.value);
 
       if (!this.parseLinesFromFile) {
-        this.add(name, value, !asciiLike(value));
+        const n = this.readKeyUnique ? '' : name;
+
+        this.add(n, value, !asciiLike(value));
       } else {
         const lines = value.split('\n');
 

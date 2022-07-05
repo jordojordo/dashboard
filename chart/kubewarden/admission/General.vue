@@ -117,16 +117,16 @@ export default {
           :value="value"
           :mode="mode"
           :options="policyServerOptions"
-          label="Policy Server"
-          tooltip="The PolicyServer that will receive the requests to be validated."
+          :label="t('kubewarden.policyConfig.serverSelect.label')"
+          :tooltip="t('kubewarden.policyConfig.serverSelect.tooltip')"
         />
       </div>
       <div class="col span-6">
         <LabeledInput
           v-model="policy.spec.module"
           :mode="mode"
-          label="Module"
-          tooltip="This is the WebAssembly module that holds the validation or mutation logic."
+          :label="t('kubewarden.policyConfig.module.label')"
+          :tooltip="t('kubewarden.policyConfig.module.tooltip')"
           :required="true"
         />
       </div>
@@ -138,9 +138,9 @@ export default {
           name="mutating"
           :options="[false, true]"
           :mode="mode"
-          label="Mutating"
+          :label="t('kubewarden.policyConfig.mutating.label')"
           :labels="['No', 'Yes']"
-          tooltip="A mutating policy will rebuild the requests with definied values that are conformant with the policy definition."
+          :tooltip="t('kubewarden.policyConfig.mutating.tooltip')"
           required
         />
       </div>
@@ -151,9 +151,9 @@ export default {
           :disabled="modeDisabled"
           :options="['monitor', 'protect']"
           :mode="mode"
-          label="Mode"
+          :label="t('kubewarden.policyConfig.mode.label')"
           :labels="['Monitor', 'Protect']"
-          tooltip="The monitor mode is a way to deploy policies to the cluster in a way that all requests that go through the policy will be accepted, as if the policy didn't exist. Defaults to 'Protect'."
+          :tooltip="t('kubewarden.policyConfig.mode.tooltip')"
         />
       </div>
     </div>
@@ -165,9 +165,9 @@ export default {
             name="ignoreRancherNamespaces"
             :options="[true, false]"
             :mode="mode"
-            label="Ignore Rancher Namespaces"
+            :label="t('kubewarden.policyConfig.ignoreRancherNamespaces.label')"
             :labels="['Yes', 'No']"
-            tooltip="Certain policies will break core services of Rancher, this will add a default list of namespaces to ignore."
+            :tooltip="t('kubewarden.policyConfig.ignoreRancherNamespaces.tooltip')"
           />
         </div>
       </div>

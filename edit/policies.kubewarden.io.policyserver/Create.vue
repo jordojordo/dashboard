@@ -59,13 +59,6 @@ export default {
 
     async finish(event) {
       try {
-        // The PolicyServer expects an array for the sourceAuthorities property
-        if ( this.chartValues?.questions?.spec?.sourceAuthorities ) {
-          const s = this.chartValues.questions.spec.sourceAuthorities.split();
-
-          this.chartValues.questions.spec.sourceAuthorities = s;
-        }
-
         merge(this.value, this.chartValues?.questions);
 
         await this.save(event);

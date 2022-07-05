@@ -38,10 +38,6 @@ export default {
     return { chartValues: null };
   },
 
-  provide() {
-    return { chartType: this.value.type };
-  },
-
   computed: {
     // if coming from the "View Yaml" page `this.mode` will display `create` - this is not legit.
     legitMode() {

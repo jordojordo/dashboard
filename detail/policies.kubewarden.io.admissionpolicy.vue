@@ -1,5 +1,6 @@
 <script>
 import { mapGetters } from 'vuex';
+import flatMap from 'lodash/flatMap';
 import { _CREATE } from '@/config/query-params';
 import { monitoringStatus } from '@/utils/monitoring';
 import { dashboardExists } from '@/utils/grafana';
@@ -38,9 +39,6 @@ export default {
   },
 
   async fetch() {
-    const inStore = this.$store.getters['currentStore'](this.resource);
-    const fullPolicyName = `${ this.value.metadata?.namespace }-${ this.value.metadata?.name }`;
-
     this.metricsProxy = await this.value.grafanaProxy();
 
     if ( this.monitoringStatus.installed ) {
@@ -55,24 +53,15 @@ export default {
       }
     }
 
-    this.jaegerService = await this.value.jaegerService();
+    this.traces = await this.value.jaegerProxy();
 
-    if ( this.jaegerService ) {
-      try {
-        const TRACE_TAGS = `"allowed"%3A"false"%2C"policy_id"%3A"namespaced-${ fullPolicyName }"`;
-        const PROXY_PATH = `api/traces?service=kubewarden-policy-server&operation=validation&tags={${ TRACE_TAGS }}`;
-        const JAEGER_PATH = `${ this.jaegerService.proxyUrl('http', 16686) + PROXY_PATH }`;
-
-        this.traces = await this.$store.dispatch(`${ inStore }/request`, { url: JAEGER_PATH });
-      } catch (e) {
-        console.error(`Error fetching Jaeger service: ${ e }`); // eslint-disable-line no-console
-      }
+    if ( this.traces.length > 1 ) {
+      this.traces = flatMap(this.traces);
     }
   },
 
   data() {
     return {
-      jaegerService:      null,
       metricsProxy:       null,
       metricsService:     null,
       traces:             null,
@@ -159,5 +148,4 @@ export default {
     }
   }
 }
-
 </style>

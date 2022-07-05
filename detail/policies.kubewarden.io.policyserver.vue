@@ -36,8 +36,6 @@ export default {
   },
 
   async fetch() {
-    const inStore = this.$store.getters['currentStore'](this.resource);
-
     this.relatedPolicies = await this.value.allRelatedPolicies();
 
     if ( this.monitoringStatus.installed ) {
@@ -52,23 +50,13 @@ export default {
       }
     }
 
-    this.jaegerProxy = await this.value.jaegerProxy();
-
-    if ( this.jaegerProxy ) {
-      const promises = this.jaegerProxy.map(p => this.$store.dispatch(`${ inStore }/request`, { url: p }));
-
-      try {
-        this.traces = await Promise.all(promises);
-      } catch (e) {
-        console.error(`Error fetching Jaeger service: ${ e }`); // eslint-disable-line no-console
-      }
-    }
+    this.traces = await this.value.jaegerProxies();
   },
 
   data() {
     return {
       RELATED_HEADERS,
-      jaegerProxy:     null,
+      jaegerProxies:     null,
       metricsProxy:    null,
       metricsService:  null,
       relatedPolicies: null,
@@ -80,12 +68,8 @@ export default {
     ...mapGetters(['currentCluster']),
     ...monitoringStatus(),
 
-    namespaceWarning() {
-      return 'This policy is targeting Rancher specific namespaces which will cause catastrophic failures with your Rancher deployment.';
-    },
-
     tracesRows() {
-      return this.value.consolidateTracesRows(this.traces);
+      return this.value.traceTableRows(this.traces);
     }
   },
 
@@ -95,7 +79,6 @@ export default {
         return row.namespaceSelector;
       }
 
-      // No need to check if it's an AdmissionPolicy... unless they decide to target something they shouldn't
       return true;
     },
   }
@@ -133,7 +116,7 @@ export default {
                   <span class="text-capitalize">{{ row.spec.mode }}</span>
                   <i
                     v-if="!hasNamespaceSelector(row)"
-                    v-tooltip.bottom="namespaceWarning"
+                    :[v-tooltip.bottom]="t('kubewarden.admissionPolicy.namespaceWarning')"
                     class="icon icon-warning"
                   />
                 </span>
@@ -152,7 +135,7 @@ export default {
           />
         </template>
       </Tab>
-      <Tab v-if="jaegerProxy" name="policy-tracing" label="Tracing" :weight="97">
+      <Tab v-if="traces" name="policy-tracing" label="Tracing" :weight="97">
         <template>
           <TraceTable
             :rows="tracesRows"

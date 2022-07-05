@@ -87,16 +87,16 @@ export default {
           :options="[true, false]"
           :mode="mode"
           class="mb-10"
-          label="Default Image"
+          :label="t('kubewarden.policyServerConfig.defaultImage.label')"
           :labels="['Yes', 'No']"
-          tooltip="Use the default `policy-server` container image"
+          :tooltip="t('kubewarden.policyServerConfig.defaultImage.tooltip')"
         />
         <template v-if="!defaultImage">
           <LabeledInput
             v-model="value.spec.image"
             :mode="mode"
-            label="Image URL"
-            tooltip="This is the container image the policy server."
+            :label="t('kubewarden.policyServerConfig.image.label')"
+            :tooltip="t('kubewarden.policyServerConfig.image.tooltip')"
           />
         </template>
       </div>
@@ -121,7 +121,7 @@ export default {
     <div class="row">
       <div class="col span-6">
         <h3>
-          Replicas
+          {{ t('kubewarden.policyServerConfig.replicas') }}
         </h3>
         <LabeledInput
           v-model.number="value.spec.replicas"
@@ -129,7 +129,7 @@ export default {
           min="0"
           required
           :mode="mode"
-          label="Replicas"
+          :label="t('kubewarden.policyServerConfig.replicas')"
         />
       </div>
     </div>

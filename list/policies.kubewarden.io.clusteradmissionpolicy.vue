@@ -1,11 +1,12 @@
 <script>
-import ResourceTable from '@/components/ResourceTable';
+import Banner from '@/components/Banner';
 import Loading from '@/components/Loading';
+import ResourceTable from '@/components/ResourceTable';
 import Select from '@/components/form/Select';
 
 export default {
   components: {
-    Loading, ResourceTable, Select
+    Banner, Loading, ResourceTable, Select
   },
 
   props: {
@@ -88,10 +89,6 @@ export default {
       }
 
       return this.filteredRows;
-    },
-
-    namespaceWarning() {
-      return 'This policy is targeting Rancher specific namespaces which will cause catastrophic failures with your Rancher deployment.';
     }
   },
 
@@ -142,6 +139,12 @@ export default {
 <template>
   <Loading v-if="$fetchState.pending" />
   <div v-else>
+    <Banner
+      class="type-banner mb-20 mt-0"
+      color="info"
+      :label="t('kubewarden.clusterAdmissionPolicy.description')"
+    />
+
     <div class="row mb-20">
       <div class="span-3 mr-10">
         <span>Resources</span>
@@ -189,7 +192,7 @@ export default {
             <span class="text-capitalize">{{ row.spec.mode }}</span>
             <i
               v-if="!hasNamespaceSelector(row)"
-              v-tooltip.bottom="namespaceWarning"
+              :[v-tooltip.bottom]="t('kubewarden.admissionPolicy.namespaceWarning')"
               class="icon icon-warning"
             />
           </span>
