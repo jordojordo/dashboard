@@ -63,7 +63,7 @@ There are two options that can be passed to the `@rancher/pkg` script:
 
 ### Configuring an Extension
 
-Replace the contents of the file `./pkg/test/index.js` with:
+Replace the contents of the file `./pkg/test/index.ts` with:
 
 ```ts
 import { importTypes } from '@rancher/auto-import';
@@ -82,7 +82,7 @@ export default function(plugin: IPlugin) {
 }
 ```
 
-Next, create a new file `./pkg/test/product.js` with this content:
+Next, create a new file `./pkg/test/product.ts` with this content:
 
 ```ts
 export function init($plugin, store) {

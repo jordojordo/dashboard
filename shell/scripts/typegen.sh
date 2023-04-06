@@ -20,6 +20,7 @@ ${BASE_DIR}/node_modules/.bin/tsc shell/config/table-headers.js --declaration --
 ${BASE_DIR}/node_modules/.bin/tsc shell/config/types.js --declaration --allowJs --emitDeclarationOnly --outDir ${SHELL_DIR}/tmp/config > /dev/null
 
 # store
+${BASE_DIR}/node_modules/.bin/tsc shell/store/index.js --declaration --allowJs --emitDeclarationOnly --outDir ${SHELL_DIR}/tmp/store > /dev/null
 ${BASE_DIR}/node_modules/.bin/tsc shell/store/features.js --declaration --allowJs --emitDeclarationOnly --outDir ${SHELL_DIR}/tmp/store > /dev/null
 
 # plugins
