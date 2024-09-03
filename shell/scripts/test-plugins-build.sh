@@ -95,7 +95,7 @@ update_version_in_package_json "${BASE_DIR}/creators/extension/package.json" "${
 
 # Publish shell pkg (tag is needed as publish-shell is optimized to work with release-shell-pkg workflow)
 echo "Publishing Shell package to local registry"
-yarn install
+yarn install:ci
 export TAG="shell-pkg-v${SHELL_VERSION}"
 ${SHELL_DIR}/scripts/publish-shell.sh
 
