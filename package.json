@@ -12,8 +12,7 @@
   "packageManager": "yarn@4.4.1",
   "workspaces": [
     "pkg/rancher-components",
-    "creators/extension",
-    "docusaurus"
+    "creators/extension"
   ],
   "scripts": {
     "build-pkg": "yarn lint && ./shell/scripts/build-pkg.sh",
