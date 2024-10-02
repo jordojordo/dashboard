@@ -1,7 +1,6 @@
 name: Build and Release Extension Charts
 
 on:
-  workflow_dispatch:
   release:
     types: [released]
 
@@ -20,3 +19,4 @@ jobs:
       pages: write
     with:
       target_branch: gh-pages
+      tagged_release: ${{ github.ref_name }}

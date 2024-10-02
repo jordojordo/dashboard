@@ -50,9 +50,6 @@ jobs:
         with:
           cache: yarn
 
-      - name: Setup yarn
-        run: npm install -g yarn
-
       - name: Install dependencies
         run: yarn
 
