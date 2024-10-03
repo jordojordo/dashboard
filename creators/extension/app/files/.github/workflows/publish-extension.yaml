@@ -1,0 +1,22 @@
+name: Build and Release Extension
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-release:
+    uses: rancher/dashboard/.github/workflows/build-extension.yml@master
+    permissions:
+      actions: write # Required for both chart and catalog builds
+      contents: write # `write` required for chart builds and `read` required for catalog builds
+      packages: write # Required for catalog builds
+      deployments: write # Required for chart builds
+      pages: write # Required for chart builds
+    with:
+      tagged_release: ${{ github.ref_name }} # Required for both chart and catalog builds
+      target_branch: gh-pages                # Required for chart builds
+      registry_target: ghcr.io               # Required for catalog builds
+      registry_user: ${{ github.actor }}     # Required for catalog builds
+    secrets:
+      registry_token: ${{ secrets.GITHUB_TOKEN }}  # Required for catalog builds

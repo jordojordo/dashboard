@@ -1,0 +1,253 @@
+name: Build and Release Extension
+
+on:
+  workflow_call:
+    inputs:
+      tagged_release:
+        description: 'Release tag name'
+        required: true
+        type: string
+
+      # Inputs for Extension Chart Build
+      target_branch:
+        description: 'Target branch for chart releases (e.g., gh-pages)'
+        required: false
+        type: string
+
+      # Inputs for Catalog Container Build
+      registry_target:
+        description: 'Container registry target'
+        required: false
+        type: string
+      registry_user:
+        description: 'Container registry user'
+        required: false
+        type: string
+    secrets:
+      registry_token:
+        description: 'Container registry token'
+        required: false
+
+env:
+  ACTIONS_RUNNER_DEBUG: false
+  CI_COMMIT_MESSAGE: CI Build Artifacts
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./
+
+jobs:
+  determine-build-type:
+    name: Determine Build Type
+    runs-on: ubuntu-latest
+    outputs:
+      build_type: ${{ steps.determine_build.outputs.build_type }}
+      chart_name: ${{ steps.determine_build.outputs.chart_name }}
+      version: ${{ steps.determine_build.outputs.version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine Build Type
+        id: determine_build
+        shell: bash
+        run: |
+          TAG_NAME="${{ inputs.tagged_release }}"
+          echo "TAG_NAME=${TAG_NAME}"
+
+          if [[ $TAG_NAME == catalog-* ]]; then
+            echo "build_type=catalog" >> $GITHUB_OUTPUT
+            echo "version=${TAG_NAME#catalog-}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [[ $TAG_NAME == chart-* ]]; then
+            echo "build_type=chart" >> $GITHUB_OUTPUT
+            CHART_PART=${TAG_NAME#chart-}
+            CHART_NAME=$(echo "$CHART_PART" | sed -E 's/-(.*)$//')
+            VERSION=$(echo "$CHART_PART" | sed -E 's/^.*-//')
+            echo "chart_name=$CHART_NAME" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Error: Invalid tag name format."
+          exit 1
+
+  # Build Extension Chart Artifact
+  build-extension-artifact:
+    name: Build Extension Artifact
+    needs: determine-build-type
+    if: needs.determine-build-type.outputs.build_type == 'chart'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Configure Git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.8.0
+
+      - name: Setup Node.js with Yarn Caching
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Build Extension Chart
+        run: |
+          CHART_NAME="${{ needs.determine-build-type.outputs.chart_name }}"
+          echo "Building extension: $CHART_NAME"
+
+          # Build the extension
+          yarn build-pkg "$CHART_NAME"
+
+      - name: Run Build Script
+        run: |
+          publish="yarn publish-pkgs -s ${{ github.repository }} -b ${{ inputs.target_branch }}"
+
+          if [[ -n "${{ inputs.tagged_release }}" ]]; then
+            publish="$publish -t ${{ inputs.tagged_release }}"
+          fi
+
+          $publish
+
+      - name: Upload Charts Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: charts
+          path: tmp
+
+  # Release Extension Charts
+  release-extension-charts:
+    name: Release Extension Charts
+    needs: build-extension-artifact
+    if: needs.determine-build-type.outputs.build_type == 'chart'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+      deployments: write
+      pages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: '${{ inputs.target_branch }}'
+
+      - name: Configure Git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: charts
+
+      - name: Commit Build
+        run: |
+          git add ./{assets,charts,extensions,index.yaml}
+          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
+          git push
+
+      - name: Run Chart Releaser
+        uses: helm/chart-releaser-action@v1.4.1
+        with:
+          charts_dir: ./charts/*
+        env:
+          CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          CR_SKIP_EXISTING: true
+
+  # Build and Push Catalog Container Image
+  build-catalog:
+    name: Build and Push Catalog Container Image
+    needs: determine-build-type
+    if: needs.determine-build-type.outputs.build_type == 'catalog'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Configure Git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.registry_target }}
+          username: ${{ inputs.registry_user }}
+          password: ${{ secrets.registry_token }}
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.8.0
+
+      - name: Setup Node.js with Yarn Caching
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Build and Push Container Image
+        run: |
+          publish="yarn publish-pkgs -cp -r ${{ inputs.registry_target }} -o ${{ github.repository_owner }}"
+
+          if [[ -n "${{ inputs.tagged_release }}" ]]; then
+            publish="$publish -t ${{ inputs.tagged_release }}"
+          fi
+
+          $publish
+
+  # Handle Missing Inputs or Unknown Build Type
+  handle-missing-inputs:
+    name: Handle Missing Inputs
+    needs: determine-build-type
+    runs-on: ubuntu-latest
+    if: ${{ (
+            (needs.determine-build-type.outputs.build_type == 'chart' && (inputs.target_branch == '' || inputs.target_branch == null)) ||
+            (needs.determine-build-type.outputs.build_type == 'catalog' && (
+                inputs.registry_target == '' || inputs.registry_user == '' || secrets.registry_token == ''
+            )) ||
+            needs.determine-build-type.outputs.build_type == ''
+          ) }}
+    steps:
+      - name: Fail Workflow
+        run: |
+          echo "Error: Required inputs are missing or unknown build type."
+          exit 1
