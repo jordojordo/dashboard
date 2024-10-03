@@ -43,8 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build_type: ${{ steps.determine_build.outputs.build_type }}
-      chart_name: ${{ steps.determine_build.outputs.chart_name }}
+      name: ${{ steps.determine_build.outputs.name }}
       version: ${{ steps.determine_build.outputs.version }}
+      tag_without_prefix: ${{ steps.determine_build.outputs.tag_without_prefix }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -59,30 +60,55 @@ jobs:
           echo "TAG_NAME=${TAG_NAME}"
 
           if [[ $TAG_NAME == catalog-* ]]; then
+            TAG_WITHOUT_PREFIX=${TAG_NAME#catalog-}
+            VERSION=${TAG_WITHOUT_PREFIX#*-}
+
             echo "build_type=catalog" >> $GITHUB_OUTPUT
-            echo "version=${TAG_NAME#catalog-}" >> $GITHUB_OUTPUT
+            echo "tag_without_prefix=${TAG_WITHOUT_PREFIX}" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+
             exit 0
           fi
 
           if [[ $TAG_NAME == chart-* ]]; then
+            TAG_WITHOUT_PREFIX=${TAG_NAME#chart-}
+            NAME=${TAG_WITHOUT_PREFIX%-*}
+            VERSION=${TAG_WITHOUT_PREFIX#*-}
+
             echo "build_type=chart" >> $GITHUB_OUTPUT
-            CHART_PART=${TAG_NAME#chart-}
-            CHART_NAME=$(echo "$CHART_PART" | sed -E 's/-(.*)$//')
-            VERSION=$(echo "$CHART_PART" | sed -E 's/^.*-//')
-            echo "chart_name=$CHART_NAME" >> $GITHUB_OUTPUT
+            echo "tag_without_prefix=${TAG_WITHOUT_PREFIX}" >> $GITHUB_OUTPUT
+            echo "name=$NAME" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
+
             exit 0
           fi
 
           echo "Error: Invalid tag name format."
           exit 1
+  
+  # Handle Missing Inputs or Unknown Build Type
+  handle-missing-inputs:
+    name: Handle Missing Inputs
+    needs: determine-build-type
+    runs-on: ubuntu-latest
+    if: ${{ (
+            (needs.determine-build-type.outputs.build_type == 'chart' && (inputs.target_branch == '' || inputs.target_branch == null)) ||
+            (needs.determine-build-type.outputs.build_type == 'catalog' && (inputs.registry_target == '' || inputs.registry_user == '')) ||
+            needs.determine-build-type.outputs.build_type == ''
+          ) }}
+    steps:
+      - name: Fail Workflow
+        run: |
+          echo "Error: Required inputs are missing or unknown build type."
+          exit 1
 
+  
   # Build Extension Chart Artifact
   build-extension-artifact:
     name: Build Extension Artifact
     needs: determine-build-type
-    if: needs.determine-build-type.outputs.build_type == 'chart'
     runs-on: ubuntu-latest
+    if: needs.determine-build-type.outputs.build_type == 'chart'
     permissions:
       actions: write
       contents: read
@@ -116,18 +142,18 @@ jobs:
 
       - name: Build Extension Chart
         run: |
-          CHART_NAME="${{ needs.determine-build-type.outputs.chart_name }}"
-          echo "Building extension: $CHART_NAME"
+          NAME="${{ needs.determine-build-type.outputs.name }}"
+          echo "Building extension: $NAME"
 
           # Build the extension
-          yarn build-pkg "$CHART_NAME"
+          yarn build-pkg "$NAME"
 
       - name: Run Build Script
         run: |
           publish="yarn publish-pkgs -s ${{ github.repository }} -b ${{ inputs.target_branch }}"
 
-          if [[ -n "${{ inputs.tagged_release }}" ]]; then
-            publish="$publish -t ${{ inputs.tagged_release }}"
+          if [[ -n "${{ needs.determine-build-type.outputs.tag_without_prefix }}" ]]; then
+            publish="$publish -t ${{ needs.determine-build-type.outputs.tag_without_prefix }}"
           fi
 
           $publish
@@ -142,8 +168,8 @@ jobs:
   release-extension-charts:
     name: Release Extension Charts
     needs: build-extension-artifact
-    if: needs.determine-build-type.outputs.build_type == 'chart'
     runs-on: ubuntu-latest
+    if: needs.determine-build-type.outputs.build_type == 'chart'
     permissions:
       actions: write
       contents: write
@@ -183,8 +209,8 @@ jobs:
   build-catalog:
     name: Build and Push Catalog Container Image
     needs: determine-build-type
-    if: needs.determine-build-type.outputs.build_type == 'catalog'
     runs-on: ubuntu-latest
+    if: needs.determine-build-type.outputs.build_type == 'catalog'
     permissions:
       actions: write
       contents: read
@@ -228,26 +254,8 @@ jobs:
         run: |
           publish="yarn publish-pkgs -cp -r ${{ inputs.registry_target }} -o ${{ github.repository_owner }}"
 
-          if [[ -n "${{ inputs.tagged_release }}" ]]; then
-            publish="$publish -t ${{ inputs.tagged_release }}"
+          if [[ -n "${{ needs.determine-build-type.outputs.tag_without_prefix }}" ]]; then
+            publish="$publish -t ${{ needs.determine-build-type.outputs.tag_without_prefix }}"
           fi
 
           $publish
-
-  # Handle Missing Inputs or Unknown Build Type
-  handle-missing-inputs:
-    name: Handle Missing Inputs
-    needs: determine-build-type
-    runs-on: ubuntu-latest
-    if: ${{ (
-            (needs.determine-build-type.outputs.build_type == 'chart' && (inputs.target_branch == '' || inputs.target_branch == null)) ||
-            (needs.determine-build-type.outputs.build_type == 'catalog' && (
-                inputs.registry_target == '' || inputs.registry_user == '' || secrets.registry_token == ''
-            )) ||
-            needs.determine-build-type.outputs.build_type == ''
-          ) }}
-    steps:
-      - name: Fail Workflow
-        run: |
-          echo "Error: Required inputs are missing or unknown build type."
-          exit 1

@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-release:
-    uses: rancher/dashboard/.github/workflows/build-extension.yml@master
+    uses: rancher/dashboard/.github/workflows/publish-extension.yaml@master
     permissions:
       actions: write # Required for both chart and catalog builds
       contents: write # `write` required for chart builds and `read` required for catalog builds
