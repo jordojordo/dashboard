@@ -85,23 +85,17 @@ jobs:
 
           echo "Error: Invalid tag name format."
           exit 1
-  
-  # Handle Missing Inputs or Unknown Build Type
-  handle-missing-inputs:
-    name: Handle Missing Inputs
-    needs: determine-build-type
-    runs-on: ubuntu-latest
-    if: ${{ (
-            (needs.determine-build-type.outputs.build_type == 'chart' && (inputs.target_branch == '' || inputs.target_branch == null)) ||
-            (needs.determine-build-type.outputs.build_type == 'catalog' && (inputs.registry_target == '' || inputs.registry_user == '')) ||
-            needs.determine-build-type.outputs.build_type == ''
-          ) }}
-    steps:
-      - name: Fail Workflow
+
+      # Handle missing inputs or unknown build type
+      - name: Handle Missing Inputs
+        if: ${{ (
+                (steps.determine_build.outputs.build_type == 'chart' && (inputs.target_branch == '' || inputs.target_branch == null)) ||
+                (steps.determine_build.outputs.build_type == 'catalog' && (inputs.registry_target == '' || inputs.registry_user == '')) ||
+                steps.determine_build.outputs.build_type == ''
+              ) }}
         run: |
           echo "Error: Required inputs are missing or unknown build type."
           exit 1
-
   
   # Build Extension Chart Artifact
   build-extension-artifact:
